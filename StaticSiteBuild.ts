@@ -41,8 +41,6 @@ export async function StaticSiteBuild(
 
   var files = filePromises.flat();
 
-  files.push(...SiteMap(files, baseUrl));
-
   const missingKeyPromise = BulkUpdateMissingKeys();
   const templateRendered = new Date().getTime();
   let ms = templateRendered - start;
@@ -109,6 +107,7 @@ export async function StaticSiteBuild(
   }
 
   await missingKeyPromise;
+  files.push(...SiteMap(files, baseUrl));
   await Promise.all(writePromises);
 
   // Save the new hashes
