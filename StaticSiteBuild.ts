@@ -92,9 +92,7 @@ export async function StaticSiteBuild(
     console.log("Verifying HTML validity");
     verifyHtmlValidity(files);
     console.log("Verifying internal URLs");
-    const internalURLErrors = [
-      ...verifyInternalUrls(files, "https://months.to"),
-    ];
+    const internalURLErrors = [...verifyInternalUrls(files, baseUrl)];
     if (internalURLErrors.length > 0) {
       console.error("Internal URL errors:");
       console.error(internalURLErrors);
