@@ -31,7 +31,9 @@ async function saveHashes(hashes: Record<string, string>) {
 }
 export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   const maxConcurrentWrites = 50;
-  console.log("---\nStarting Static Site Build");
+  console.log(
+    "\n[---------------------------------------------\nStarting Static Site Build"
+  );
   options.start = options.start || new Date().getTime();
 
   var files = options.files.flat();
@@ -85,13 +87,11 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   }
 
   if (skippedBecauseOfHashMatch > 0) {
-    console.log(
-      `Skipping ${skippedBecauseOfHashMatch} files because they had the same hash`
-    );
+    console.log(`Skipping ${skippedBecauseOfHashMatch} files with no changes`);
   }
 
   if (options.validationOptions?.HTML !== false) {
-    console.log("Verifying HTML validity");
+    console.log("Verifying HTML is valid");
     verifyHtmlValidity(files);
   }
   if (options.validationOptions?.internalURLs !== false) {
@@ -110,11 +110,6 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
       console.log("No internal URL errors found");
     }
   }
-  if (skippedBecauseOfHashMatch > 0) {
-    console.log(
-      `Skipped writing ${skippedBecauseOfHashMatch} files because of hash match`
-    );
-  }
 
   await missingKeyPromise;
   files.push(...SiteMap(files, options.baseUrl));
@@ -125,5 +120,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 
   const end = new Date().getTime();
   ms = end - options.start;
-  console.log(`Done in ${ms} ms with ${files.length} files\n---`);
+  console.log(
+    `Done in ${ms} ms with ${files.length} files\n---------------------------------------------]\n`
+  );
 }

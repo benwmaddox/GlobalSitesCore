@@ -42,5 +42,5 @@ export function verifyHtmlValidity(files: FileResult[]) {
       }
     }
   });
-  console.log(`Finished checking HTML validity on ${filesChecked} files`);
+  console.log(`Finished checking ${filesChecked} HTML files`);
 }
