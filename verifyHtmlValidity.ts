@@ -12,6 +12,7 @@ export function verifyHtmlValidity(files: FileResult[]) {
     },
   });
   var htmlErrors = 0;
+  var filesChecked = 0;
   files.forEach((file) => {
     if (htmlErrors > 100) {
       return;
@@ -19,6 +20,7 @@ export function verifyHtmlValidity(files: FileResult[]) {
     htmlErrors += 1;
     if (file.content instanceof Buffer) {
       var report = validator.validateStringSync(file.content.toString());
+      filesChecked += 1;
       if (report.errorCount > 0) {
         console.log(`Errors in ${file.relativePath}:`);
         for (let message of report.results[0].messages) {
@@ -30,6 +32,7 @@ export function verifyHtmlValidity(files: FileResult[]) {
         return;
       }
       var report = validator.validateStringSync(file.content);
+      filesChecked += 1;
       if (report.errorCount > 0) {
         console.log(`Errors in ${file.relativePath}:`);
         console.error({
@@ -39,5 +42,5 @@ export function verifyHtmlValidity(files: FileResult[]) {
       }
     }
   });
-  console.log("Finished checking HTML validity");
+  console.log(`Finished checking HTML validity on ${filesChecked} files`);
 }

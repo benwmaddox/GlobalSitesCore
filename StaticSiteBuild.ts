@@ -84,10 +84,9 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     }
   }
 
-  console.log(`Finishing file writes`);
   if (skippedBecauseOfHashMatch > 0) {
     console.log(
-      `Skipped ${skippedBecauseOfHashMatch} files because they had the same hash (Dev build only)`
+      `Skipping ${skippedBecauseOfHashMatch} files because they had the same hash`
     );
   }
 
@@ -113,7 +112,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   }
   if (skippedBecauseOfHashMatch > 0) {
     console.log(
-      ` 3. Skipped writing ${skippedBecauseOfHashMatch} files because of hash match`
+      `Skipped writing ${skippedBecauseOfHashMatch} files because of hash match`
     );
   }
 
