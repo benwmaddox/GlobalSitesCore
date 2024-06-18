@@ -38,6 +38,7 @@ interface StaticSiteBuildOptions {
 }
 
 export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
+  const maxConcurrentWrites = 50;
   console.log("---\nStarting Static Site Build");
   options.start = options.start || new Date().getTime();
 
@@ -68,9 +69,13 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
       ) {
         writePromises.push(writeFileAsync(file.relativePath, content));
         writtenFileCount++;
-        if (writtenFileCount % 10 === 0 && writtenFileCount > 0) {
+        if (
+          writtenFileCount % maxConcurrentWrites === 0 &&
+          writtenFileCount > 0
+        ) {
           // file system help. TODO: figure out better way to handle concurrent file write errors
-          await new Promise((resolve) => setTimeout(resolve, 50));
+          await Promise.all(writePromises);
+          writePromises.length = 0;
         }
       } else {
         skippedBecauseOfHashMatch++;
