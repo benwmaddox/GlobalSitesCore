@@ -80,6 +80,7 @@ export function verifyInternalUrls(
     new URL("ads.txt", baseUrl).href,
     new URL("ads.txt", baseUrl).href,
     new URL("bqc47a42s1rmcym7watcz29swp68pbhv.txt", baseUrl).href,
+    new URL("_redirects", baseUrl).href,
   ]);
   definedUrls.forEach((definedUrl) => {
     if (errors.length >= errorLimit) {
