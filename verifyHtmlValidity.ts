@@ -1,7 +1,9 @@
 import { HtmlValidate } from "html-validate";
 import { FileResult } from "./FileResult";
+import { checkMarkInGreen, crossMarkInRed, ellipsis } from "./ConsoleText";
 
 export function verifyHtmlValidity(files: FileResult[]) {
+  console.log(`${ellipsis} Verifying HTML is valid`);
   var validator = new HtmlValidate({
     extends: ["html-validate:recommended"],
     rules: {
@@ -17,11 +19,11 @@ export function verifyHtmlValidity(files: FileResult[]) {
     if (htmlErrors > 100) {
       return;
     }
-    htmlErrors += 1;
     if (file.content instanceof Buffer) {
       var report = validator.validateStringSync(file.content.toString());
       filesChecked += 1;
       if (report.errorCount > 0) {
+        htmlErrors += 1;
         console.log(`Errors in ${file.relativePath}:`);
         for (let message of report.results[0].messages) {
           console.error(message);
@@ -34,6 +36,7 @@ export function verifyHtmlValidity(files: FileResult[]) {
       var report = validator.validateStringSync(file.content);
       filesChecked += 1;
       if (report.errorCount > 0) {
+        htmlErrors += 1;
         console.log(`Errors in ${file.relativePath}:`);
         console.error({
           path: file.relativePath,
@@ -42,5 +45,13 @@ export function verifyHtmlValidity(files: FileResult[]) {
       }
     }
   });
-  console.log(`Finished checking ${filesChecked} HTML files`);
+  if (htmlErrors > 0) {
+    console.log(
+      `${crossMarkInRed} Finished verifying ${filesChecked} HTML files with ${htmlErrors} errors`
+    );
+  } else {
+    console.log(
+      `${checkMarkInGreen} Finished verifying ${filesChecked} HTML files`
+    );
+  }
 }

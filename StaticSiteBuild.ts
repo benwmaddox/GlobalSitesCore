@@ -6,6 +6,7 @@ import { writeFileAsync } from "./writeFileAsync";
 import fs from "fs-extra";
 import crypto from "crypto";
 import { StaticSiteBuildOptions } from "./StaticSiteBuildOptions";
+import { checkMarkInGreen, ellipsis } from "./ConsoleText";
 
 const hashFilePath = "./hashFile.json";
 
@@ -32,7 +33,7 @@ async function saveHashes(hashes: Record<string, string>) {
 export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   const maxConcurrentWrites = 50;
   console.log(
-    "\n[---------------------------------------------\nStarting Static Site Build"
+    `\n[---------------------------------------------\n${ellipsis} Starting Static Site Build`
   );
   options.start = options.start || new Date().getTime();
 
@@ -72,7 +73,6 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
           writtenFileCount % maxConcurrentWrites === 0 &&
           writtenFileCount > 0
         ) {
-          // file system help. TODO: figure out better way to handle concurrent file write errors
           await Promise.all(writePromises);
           writePromises.length = 0;
         }
@@ -87,15 +87,15 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   }
 
   if (skippedBecauseOfHashMatch > 0) {
-    console.log(`Skipping ${skippedBecauseOfHashMatch} files with no changes`);
+    console.log(
+      `${ellipsis} Skipping ${skippedBecauseOfHashMatch} files with no changes`
+    );
   }
 
   if (options.validationOptions?.HTML !== false) {
-    console.log("Verifying HTML is valid");
     verifyHtmlValidity(files);
   }
   if (options.validationOptions?.internalURLs !== false) {
-    console.log("Verifying internal URLs");
     const internalURLErrors = [
       ...verifyInternalUrls(
         files,
@@ -103,12 +103,6 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
         options.validationSkipUrls || []
       ),
     ];
-    if (internalURLErrors.length > 0) {
-      console.error("Internal URL errors:");
-      console.error(internalURLErrors);
-    } else {
-      console.log("No internal URL errors found");
-    }
   }
 
   await missingKeyPromise;
@@ -121,6 +115,6 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   const end = new Date().getTime();
   ms = end - options.start;
   console.log(
-    `Done in ${ms} ms with ${files.length} files\n---------------------------------------------]\n`
+    `${checkMarkInGreen}  Done in ${ms} ms with ${files.length} files\n---------------------------------------------]\n`
   );
 }

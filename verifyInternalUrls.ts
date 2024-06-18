@@ -1,11 +1,13 @@
 import { URL } from "url";
 import { FileResult } from "./FileResult";
+import { checkMarkInGreen, crossMarkInRed } from "./ConsoleText";
 
 export function verifyInternalUrls(
   files: FileResult[],
   baseUrl: string,
   ignoreUrls: string[]
 ): string[] {
+  console.log(`${checkMarkInGreen} Verifying internal URLs`);
   var errorLimit = 100;
 
   var definedUrls = new Set<string>();
@@ -95,9 +97,17 @@ export function verifyInternalUrls(
   });
   //   console.log({ definedUrlsReferenced, urlsInContentWithoutMatch, errors });
   // these are ok if they are not referenced
-  console.log(
-    `Urls in content with match: ${definedUrlsReferenced.size}. Without match: ${urlsInContentWithoutMatch.size}.`
-  );
+  if (urlsInContentWithoutMatch.size > 0 && errors.length > 0) {
+    console.log(
+      `${crossMarkInRed} Urls in content with match: ${definedUrlsReferenced.size}. Without match: ${urlsInContentWithoutMatch.size}.`
+    );
+  }
 
+  if (errors.length > 0) {
+    console.error("Internal URL errors:");
+    console.error(errors);
+  } else {
+    console.log(`${checkMarkInGreen} No internal URL errors found`);
+  }
   return errors;
 }
