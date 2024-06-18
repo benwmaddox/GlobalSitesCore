@@ -82,7 +82,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     }
 
     if (i % 1000 === 0 && i > 0) {
-      console.log(`Writing file ${i} of ${files.length} (Asynchronously)`);
+      console.log(`Writing file ${i} of ${files.length}`);
     }
   }
 
