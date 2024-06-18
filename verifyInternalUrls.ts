@@ -1,13 +1,13 @@
 import { URL } from "url";
 import { FileResult } from "./FileResult";
-import { checkMarkInGreen, crossMarkInRed } from "./ConsoleText";
+import { checkMarkInGreen, crossMarkInRed, ellipsis } from "./ConsoleText";
 
 export function verifyInternalUrls(
   files: FileResult[],
   baseUrl: string,
   ignoreUrls: string[]
 ): string[] {
-  console.log(`${checkMarkInGreen} Verifying internal URLs`);
+  console.log(`${ellipsis} Verifying internal URLs`);
   var errorLimit = 100;
 
   var definedUrls = new Set<string>();

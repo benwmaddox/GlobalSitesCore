@@ -115,6 +115,6 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   const end = new Date().getTime();
   ms = end - options.start;
   console.log(
-    `${checkMarkInGreen}  Done in ${ms} ms with ${files.length} files\n---------------------------------------------]\n`
+    `${checkMarkInGreen} Done in ${ms} ms with ${files.length} files\n---------------------------------------------]\n`
   );
 }
