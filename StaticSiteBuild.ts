@@ -1,4 +1,3 @@
-import { FileResult } from "./FileResult";
 import { SiteMap } from "./Sitemap";
 import { BulkUpdateMissingKeys as BulkUpdateMissingKeysGoogleTranslate } from "./i18n";
 import { verifyHtmlValidity } from "./verifyHtmlValidity";
@@ -6,6 +5,7 @@ import { verifyInternalUrls } from "./verifyInternalUrls";
 import { writeFileAsync } from "./writeFileAsync";
 import fs from "fs-extra";
 import crypto from "crypto";
+import { StaticSiteBuildOptions } from "./StaticSiteBuildOptions";
 
 const hashFilePath = "./hashFile.json";
 
@@ -29,20 +29,6 @@ async function loadHashes() {
 async function saveHashes(hashes: Record<string, string>) {
   await fs.writeFile(hashFilePath, JSON.stringify(hashes, null, 2), "utf8");
 }
-interface ValidationOptions {
-  HTML: boolean;
-  internalURLs: boolean;
-}
-interface StaticSiteBuildOptions {
-  baseUrl: string;
-  files: FileResult[][];
-  validationSkipUrls?: string[];
-  start?: number;
-  validationOptions?: ValidationOptions;
-  translationSource: "Manual" | "GoogleTranslate" | "OpenAI";
-  forceFileWrite?: boolean;
-}
-
 export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   const maxConcurrentWrites = 50;
   console.log("---\nStarting Static Site Build");
