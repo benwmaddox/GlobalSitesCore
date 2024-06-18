@@ -1,6 +1,6 @@
 import { FileResult } from "./FileResult";
 import { SiteMap } from "./Sitemap";
-import { BulkUpdateMissingKeys } from "./i18n";
+import { BulkUpdateMissingKeys as BulkUpdateMissingKeysGoogleTranslate } from "./i18n";
 import { verifyHtmlValidity } from "./verifyHtmlValidity";
 import { verifyInternalUrls } from "./verifyInternalUrls";
 import { writeFileAsync } from "./writeFileAsync";
@@ -29,12 +29,18 @@ async function loadHashes() {
 async function saveHashes(hashes: Record<string, string>) {
   await fs.writeFile(hashFilePath, JSON.stringify(hashes, null, 2), "utf8");
 }
+interface ValidationOptions {
+  HTML: boolean;
+  internalURLs: boolean;
+}
 interface StaticSiteBuildOptions {
   baseUrl: string;
-  productionBuild: boolean;
   files: FileResult[][];
   validationSkipUrls?: string[];
   start?: number;
+  validationOptions?: ValidationOptions;
+  translationSource: "Manual" | "GoogleTranslate" | "OpenAI";
+  forceFileWrite?: boolean;
 }
 
 export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
@@ -44,7 +50,12 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 
   var files = options.files.flat();
 
-  const missingKeyPromise = BulkUpdateMissingKeys();
+  let missingKeyPromise: Promise<void> =
+    options.translationSource === "GoogleTranslate"
+      ? BulkUpdateMissingKeysGoogleTranslate()
+      : // TODO: handle other translation sources, including manual and openai
+        Promise.resolve();
+
   const templateRendered = new Date().getTime();
 
   let ms = templateRendered - options.start;
@@ -65,7 +76,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 
       if (
         (currentHashes as Record<string, string>)[file.relativePath] !== hash ||
-        options.productionBuild
+        options.forceFileWrite === true
       ) {
         writePromises.push(writeFileAsync(file.relativePath, content));
         writtenFileCount++;
@@ -94,9 +105,11 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     );
   }
 
-  if (options.productionBuild) {
+  if (options.validationOptions?.HTML !== false) {
     console.log("Verifying HTML validity");
     verifyHtmlValidity(files);
+  }
+  if (options.validationOptions?.internalURLs !== false) {
     console.log("Verifying internal URLs");
     const internalURLErrors = [
       ...verifyInternalUrls(
@@ -111,10 +124,8 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     } else {
       console.log("No internal URL errors found");
     }
-  } else {
-    console.log("This is a dev build.");
-    console.log(" 1. Skipping HTML validity check");
-    console.log(" 2. Skipping internal URL check");
+  }
+  if (skippedBecauseOfHashMatch > 0) {
     console.log(
       ` 3. Skipped writing ${skippedBecauseOfHashMatch} files because of hash match`
     );
