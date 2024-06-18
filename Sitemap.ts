@@ -20,9 +20,9 @@ export function SiteMap(
                   .map(
                     (al) =>
                       `\r\n<xhtml:link rel="alternate" hreflang="${
-                        al.lang
+                        al.code
                       }" href="${baseUrlWithoutTrailingSlash}${standardizePathForSitemap(
-                        al.relativePath
+                        al.url
                       )}" />`
                   )
                   .join("")

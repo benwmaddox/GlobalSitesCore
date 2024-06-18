@@ -1,9 +1,7 @@
-export interface AlternateLanguage {
-  lang: string;
-  relativePath: string;
-}
+import { LanguageOption } from "./LanguageOption";
+
 export interface FileResult {
-  alternateLanguages?: AlternateLanguage[];
+  alternateLanguages?: LanguageOption[];
   relativePath: string;
   content?: string | Buffer;
   includeInSitemap?: boolean;
