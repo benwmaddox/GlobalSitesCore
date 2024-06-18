@@ -41,8 +41,6 @@ export async function StaticSiteBuild(
 
   var files = filePromises.flat();
 
-  files.push(...SiteMap(files, baseUrl));
-
   const missingKeyPromise = BulkUpdateMissingKeys();
   const templateRendered = new Date().getTime();
   let ms = templateRendered - start;
@@ -92,9 +90,7 @@ export async function StaticSiteBuild(
     console.log("Verifying HTML validity");
     verifyHtmlValidity(files);
     console.log("Verifying internal URLs");
-    const internalURLErrors = [
-      ...verifyInternalUrls(files, "https://months.to"),
-    ];
+    const internalURLErrors = [...verifyInternalUrls(files, baseUrl)];
     if (internalURLErrors.length > 0) {
       console.error("Internal URL errors:");
       console.error(internalURLErrors);
@@ -111,6 +107,7 @@ export async function StaticSiteBuild(
   }
 
   await missingKeyPromise;
+  files.push(...SiteMap(files, baseUrl));
   await Promise.all(writePromises);
 
   // Save the new hashes

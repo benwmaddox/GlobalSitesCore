@@ -81,6 +81,7 @@ export async function bulkTranslate(
             return obj;
           }, {});
 
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
         // Save the updated translations back to the file
         fs.writeFileSync(
           filePath,
@@ -132,6 +133,7 @@ export async function bulkTranslate(
           return obj;
         }, {});
 
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
       fs.writeFileSync(
         filePath,
         JSON.stringify(existingTranslations, null, 2),
@@ -315,6 +317,11 @@ export async function translate(
   let existingTranslations: Translations = {};
   if (fs.existsSync(filePath)) {
     existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+  } else {
+    // make dir
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    // write file
+    fs.writeFileSync(filePath, "{}", "utf-8");
   }
 
   // Add the new translation
@@ -394,6 +401,8 @@ export async function translate(
       }
     }
   }
+  // make sure directory exists
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
   // Save the updated translations back to the file
   fs.writeFileSync(
     filePath,
