@@ -29,21 +29,24 @@ async function loadHashes() {
 async function saveHashes(hashes: Record<string, string>) {
   await fs.writeFile(hashFilePath, JSON.stringify(hashes, null, 2), "utf8");
 }
+interface StaticSiteBuildOptions {
+  baseUrl: string;
+  productionBuild: boolean;
+  files: FileResult[][];
+  validationSkipUrls?: string[];
+  start?: number;
+}
 
-export async function StaticSiteBuild(
-  baseUrl: string,
-  // if true, run validation steps (slow)
-  productionBuild: boolean,
-  filePromises: FileResult[][],
-  start: number
-) {
+export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   console.log("---\nStarting Static Site Build");
+  options.start = options.start || new Date().getTime();
 
-  var files = filePromises.flat();
+  var files = options.files.flat();
 
   const missingKeyPromise = BulkUpdateMissingKeys();
   const templateRendered = new Date().getTime();
-  let ms = templateRendered - start;
+
+  let ms = templateRendered - options.start;
 
   const currentHashes = await loadHashes();
   const newHashes = {};
@@ -61,7 +64,7 @@ export async function StaticSiteBuild(
 
       if (
         (currentHashes as Record<string, string>)[file.relativePath] !== hash ||
-        productionBuild
+        options.productionBuild
       ) {
         writePromises.push(writeFileAsync(file.relativePath, content));
         writtenFileCount++;
@@ -86,11 +89,17 @@ export async function StaticSiteBuild(
     );
   }
 
-  if (productionBuild) {
+  if (options.productionBuild) {
     console.log("Verifying HTML validity");
     verifyHtmlValidity(files);
     console.log("Verifying internal URLs");
-    const internalURLErrors = [...verifyInternalUrls(files, baseUrl)];
+    const internalURLErrors = [
+      ...verifyInternalUrls(
+        files,
+        options.baseUrl,
+        options.validationSkipUrls || []
+      ),
+    ];
     if (internalURLErrors.length > 0) {
       console.error("Internal URL errors:");
       console.error(internalURLErrors);
@@ -107,13 +116,13 @@ export async function StaticSiteBuild(
   }
 
   await missingKeyPromise;
-  files.push(...SiteMap(files, baseUrl));
+  files.push(...SiteMap(files, options.baseUrl));
   await Promise.all(writePromises);
 
   // Save the new hashes
   await saveHashes(newHashes);
 
   const end = new Date().getTime();
-  ms = end - start;
+  ms = end - options.start;
   console.log(`Done in ${ms} ms with ${files.length} files\n---`);
 }

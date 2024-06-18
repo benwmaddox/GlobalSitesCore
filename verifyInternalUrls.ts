@@ -3,7 +3,8 @@ import { FileResult } from "./FileResult";
 
 export function verifyInternalUrls(
   files: FileResult[],
-  baseUrl: string
+  baseUrl: string,
+  ignoreUrls: string[]
 ): string[] {
   var errorLimit = 100;
 
@@ -70,18 +71,10 @@ export function verifyInternalUrls(
   });
 
   // find defined urls that are not referenced
-  var okUrls = new Set<string>([
-    new URL("sitemap.xml", baseUrl).href,
-    new URL("sitemap.xml/", baseUrl).href,
-    new URL("robots.txt", baseUrl).href,
-    new URL("robots.txt/", baseUrl).href,
-    new URL("404", baseUrl).href,
-    new URL("404/", baseUrl).href,
-    new URL("ads.txt", baseUrl).href,
-    new URL("ads.txt", baseUrl).href,
-    new URL("bqc47a42s1rmcym7watcz29swp68pbhv.txt", baseUrl).href,
-    new URL("_redirects", baseUrl).href,
-  ]);
+  var okUrls = new Set<string>(
+    ignoreUrls.map((url) => new URL(url, baseUrl).href)
+  );
+
   definedUrls.forEach((definedUrl) => {
     if (errors.length >= errorLimit) {
       return;
