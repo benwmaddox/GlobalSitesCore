@@ -43,17 +43,17 @@ export function verifyHtmlValidity(
       if (report.errorCount > 0) {
         htmlErrors += 1;
         console.log(`Errors in ${file.relativePath}:`);
+        var message = report.results[0].messages[0];
         console.error({
           path: file.relativePath,
           // get the line context from the file content. 1 before through 1 after
           lineContext: file.content
             .split("\n")
-            .slice(
-              report.results[0].messages[0].line - 1 - 1,
-              report.results[0].messages[0].line + 2
-            )
+            .slice(message.line - 1 - 1, message.line + 2)
             .join("\n"),
-          ...report.results[0].messages[0],
+          ruleId: message.ruleId,
+          message: message.message,
+          ruleUrl: message.ruleUrl,
         });
       }
     }
