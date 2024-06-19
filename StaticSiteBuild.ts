@@ -111,7 +111,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
       ...verifyInternalUrls(
         files,
         options.baseUrl,
-        options.validationSkipUrls || []
+        options.validationOptions?.skipUrls || []
       ),
     ];
   }
