@@ -35,7 +35,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   console.log(
     `\n[---------------------------------------------\n${ellipsis} Starting Static Site Build`
   );
-  options.start = options.start || new Date().getTime();
+  options.startTime = options.startTime || new Date().getTime();
 
   var files = options.files.flat();
 
@@ -47,7 +47,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 
   const templateRendered = new Date().getTime();
 
-  let ms = templateRendered - options.start;
+  let ms = templateRendered - options.startTime;
 
   const currentHashes = await loadHashes();
   const newHashes = {};
@@ -82,7 +82,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     }
 
     if (i % 1000 === 0 && i > 0) {
-      console.log(`Writing file ${i} of ${files.length} (Asynchronously)`);
+      console.log(`Writing file ${i} of ${files.length}`);
     }
   }
 
@@ -118,7 +118,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   await saveHashes(newHashes);
 
   const end = new Date().getTime();
-  ms = end - options.start;
+  ms = end - options.startTime;
   console.log(
     `${checkMarkInGreen} Done in ${ms} ms with ${files.length} files\n---------------------------------------------]\n`
   );
