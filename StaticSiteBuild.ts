@@ -33,15 +33,17 @@ async function saveHashes(hashes: Record<string, string>) {
 export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   var lockFilePath = "./staticSiteBuildLock.json";
   var lockFile = fs.existsSync(lockFilePath)
-    ? await fs.readFile(lockFilePath, "utf8")
+    ? fs.readFileSync(lockFilePath, "utf8")
     : "{}";
   var lock = JSON.parse(lockFile);
   if (lock.locked) {
-    console.log(`${ellipsis} Static Site Build is already locked`);
+    console.log(
+      `${ellipsis} Changes detected. Static Site Build is currently running. If this is in error, delete staticSiteBuildLock.json file and try again.`
+    );
     return;
   }
   lock.locked = true;
-  await fs.writeFile(lockFilePath, JSON.stringify(lock, null, 2), "utf8");
+  fs.writeFileSync(lockFilePath, JSON.stringify(lock, null, 2), "utf8");
   const maxConcurrentWrites = 50;
   console.log(
     `\n[---------------------------------------------\n${ellipsis} Starting Static Site Build`
