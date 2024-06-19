@@ -92,8 +92,13 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     );
   }
 
-  if (options.validationOptions?.HTML !== false) {
+  if (options.validationOptions?.HTML === "Full") {
     verifyHtmlValidity(files);
+  }
+  if (options.validationOptions?.HTML === "Sample") {
+    // sample of 25 random files
+    const randomFiles = files.sort(() => 0.5 - Math.random()).slice(0, 25);
+    verifyHtmlValidity(randomFiles);
   }
   if (options.validationOptions?.internalURLs !== false) {
     const internalURLErrors = [

@@ -1,4 +1,4 @@
 export interface ValidationOptions {
-  HTML: boolean;
+  HTML: "Sample" | "Full" | "None";
   internalURLs: boolean;
 }
