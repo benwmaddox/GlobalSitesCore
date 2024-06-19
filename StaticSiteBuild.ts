@@ -93,7 +93,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   }
 
   if (options.validationOptions?.HTML === "Full") {
-    verifyHtmlValidity(files);
+    verifyHtmlValidity(files, options.HTMLValidationConfig);
   }
   if (options.validationOptions?.HTML === "Sample") {
     // sample of 1% of files or 10 random files (whichever is greater)
@@ -101,7 +101,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     const randomFiles = [...files]
       .sort(() => 0.5 - Math.random())
       .slice(0, sampleSize);
-    verifyHtmlValidity(randomFiles);
+    verifyHtmlValidity(randomFiles, options.HTMLValidationConfig);
   }
   if (options.validationOptions?.internalURLs !== false) {
     const internalURLErrors = [
