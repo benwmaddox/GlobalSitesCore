@@ -72,7 +72,11 @@ export async function bulkTranslate(
         }
 
         // Add the new translation
-        existingTranslations[key] = key;
+        if (ns === "url") {
+          existingTranslations[key] = slugifyText(key);
+        } else {
+          existingTranslations[key] = key;
+        }
         // Sort the keys
         existingTranslations = Object.keys(existingTranslations)
           .sort()
