@@ -96,8 +96,11 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     verifyHtmlValidity(files);
   }
   if (options.validationOptions?.HTML === "Sample") {
-    // sample of 25 random files
-    const randomFiles = files.sort(() => 0.5 - Math.random()).slice(0, 25);
+    // sample of 1% of files or 10 random files (whichever is greater)
+    const sampleSize = Math.max(Math.ceil(files.length * 0.01), 10);
+    const randomFiles = [...files]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, sampleSize);
     verifyHtmlValidity(randomFiles);
   }
   if (options.validationOptions?.internalURLs !== false) {
