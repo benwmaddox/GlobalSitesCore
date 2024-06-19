@@ -37,9 +37,9 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     : "{}";
   var lock = JSON.parse(lockFile);
   if (lock.locked) {
-    console.log(
-      `${ellipsis} Changes detected. Static Site Build is currently running. If this is in error, delete staticSiteBuildLock.json file and try again.`
-    );
+    //console.log(
+    //  `${ellipsis} Changes detected. Static Site Build is currently running. If this is in error, delete staticSiteBuildLock.json file and try again.`
+    //);
     return;
   }
   lock.locked = true;
