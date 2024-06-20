@@ -1,36 +1,114 @@
 import i18next from "i18next";
 import { LanguageOption } from "./LanguageOption";
+import { FileResult } from "./FileResult";
 
-export var languages = [
-  "bn",
-  "de",
-  "el",
-  "es",
-  "fr",
-  "hi",
-  "hu",
-  "id",
-  "it",
-  "ja",
-  "ko",
-  "nl",
-  "pa",
-  "pl",
-  "pt",
-  "ru",
-  "th",
-  "tr",
-  "vi",
-  "zh",
-  "en",
-];
+export var languageSettings = {
+  languages: [
+    "bn",
+    "de",
+    "el",
+    "es",
+    "fr",
+    "hi",
+    "hu",
+    "id",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pa",
+    "pl",
+    "pt",
+    "ru",
+    "th",
+    "tr",
+    "vi",
+    "zh",
+    "en",
+  ],
+  defaultLanguage: "en",
+};
+
+export function setLanguages(languages: string[]) {
+  languageSettings.languages = languages;
+}
+export function getLanguages() {
+  return languageSettings.languages;
+}
+
+export interface RenderProps {
+  option: LanguageOption;
+  allOptions: LanguageOption[];
+}
+export interface RenderLanguageFileOptions {
+  fileNameReplacements?: { [key: string]: string };
+  fileDirectoryInEnglish: string | undefined;
+  fileNameInEnglish: string;
+  includeInSitemap: boolean;
+  render: (props: RenderProps) => string;
+}
+export async function renderLanguageFiles(
+  options: RenderLanguageFileOptions
+): Promise<FileResult[]> {
+  var fileResults: FileResult[] = [];
+  var languageOptions = await getLanguageOptions(
+    options.fileNameInEnglish,
+    undefined
+  );
+
+  if (options.fileNameReplacements) {
+    languageOptions.forEach((option) => {
+      for (let key in options.fileNameReplacements) {
+        option.filePath = option.filePath.replaceOnce(
+          key,
+          options.fileNameReplacements[key]
+        );
+        option.url = option.url.replaceOnce(
+          key,
+          options.fileNameReplacements[key]
+        );
+      }
+    });
+  }
+  if (
+    !options.fileNameReplacements &&
+    languageOptions.some((option) => option.filePath.includes("{"))
+  ) {
+    console.warn(
+      `File ${options.fileNameInEnglish} contains {} but no filename replacements`
+    );
+  }
+  for (let language of languageSettings.languages) {
+    await i18next.changeLanguage(language);
+    var match = languageOptions.find((option) => option.code === language);
+    if (!match) {
+      console.error(
+        `Language ${language} not found for file ${options.fileNameInEnglish}`
+      );
+      continue;
+    }
+
+    fileResults.push({
+      relativePath: match.filePath,
+      content: await options.render({
+        option: match,
+        allOptions: languageOptions,
+      }),
+      includeInSitemap: options.includeInSitemap,
+      languageOptions: languageOptions,
+    });
+  }
+
+  await i18next.changeLanguage(languageSettings.defaultLanguage);
+  return fileResults;
+}
 
 export async function getLanguageOptions(
   fileNameWithoutNumberInEnglish: string | undefined,
   i: number | undefined
 ): Promise<LanguageOption[]> {
   var languageOptions: LanguageOption[] = [];
-  for (let language of languages) {
+  for (let language of languageSettings.languages) {
     await i18next.changeLanguage(language);
 
     var fileNameWithoutNumber = fileNameWithoutNumberInEnglish

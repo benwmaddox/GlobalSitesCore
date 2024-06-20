@@ -24,7 +24,7 @@ if (!String.prototype.replaceOnce) {
     if (occurrences !== 1) {
       throw new Error(
         //console.error(
-        `The text "${searchText}" appears ${occurrences} times in the "${this}". Expected exactly once. Replacement text was "${replacementText}".`
+        `The text "${searchText}" appears ${occurrences} times in the "${this}". Expected exactly once. Replacement text was "${replacementText}". Look in the locale files to see if something needs to have text replaced.`
       );
     }
     return this.replace(searchText, replacementText);

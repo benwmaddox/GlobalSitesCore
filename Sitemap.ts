@@ -15,8 +15,8 @@ export function SiteMap(
           `<url><loc>${baseUrlWithoutTrailingSlash}${standardizePathForSitemap(
             f.relativePath
           )}</loc>${
-            f.alternateLanguages
-              ? f.alternateLanguages
+            f.languageOptions
+              ? f.languageOptions
                   .map(
                     (al) =>
                       `\r\n<xhtml:link rel="alternate" hreflang="${

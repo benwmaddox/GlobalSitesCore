@@ -41,7 +41,7 @@ export async function CopyStaticFiles(): Promise<FileResult[]> {
         relativePath: path.relative(destDir, destPath),
         includeInSitemap: false, // destPath.endsWith(".html"),
         content: undefined,
-        alternateLanguages: [],
+        languageOptions: [],
       });
     } catch (error) {
       console.error(`Error processing file ${srcPath}:`, error);

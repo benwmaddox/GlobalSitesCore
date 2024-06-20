@@ -1,7 +1,7 @@
 import { LanguageOption } from "./LanguageOption";
 
 export interface FileResult {
-  alternateLanguages?: LanguageOption[];
+  languageOptions?: LanguageOption[];
   relativePath: string;
   content?: string | Buffer;
   includeInSitemap?: boolean;
