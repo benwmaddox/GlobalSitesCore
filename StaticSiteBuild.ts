@@ -48,7 +48,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   // node execution directory
   var projectFolderName = process.cwd().split(/\/|\\/).pop();
   console.log(
-    `\n[---------------------------------------------\n${ellipsis} Starting Static Site Build for ${projectFolderName}`
+    `\n[---------------------------------------------\n${ellipsis} Starting build for ${projectFolderName}`
   );
   options.startTime = options.startTime || new Date().getTime();
 
