@@ -45,10 +45,8 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
   lock.locked = true;
   fs.writeFileSync(lockFilePath, JSON.stringify(lock, null, 2), "utf8");
   const maxConcurrentWrites = 50;
-  // node execution directory
-  var projectFolderName = process.cwd().split(/\/|\\/).pop();
   console.log(
-    `\n[---------------------------------------------\n${ellipsis} Starting build for ${projectFolderName}`
+    `\n[---------------------------------------------\n${ellipsis} Starting build for ${options.baseUrl}`
   );
   options.startTime = options.startTime || new Date().getTime();
 
