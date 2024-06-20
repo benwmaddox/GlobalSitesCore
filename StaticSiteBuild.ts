@@ -1,12 +1,15 @@
 import { SiteMap } from "./Sitemap";
-import { BulkUpdateMissingKeys as BulkUpdateMissingKeysGoogleTranslate } from "./i18n";
+import {
+  BulkUpdateMissingKeys as BulkUpdateMissingKeysGoogleTranslate,
+  missingKeys,
+} from "./i18n";
 import { verifyHtmlValidity } from "./verifyHtmlValidity";
 import { verifyInternalUrls } from "./verifyInternalUrls";
 import { writeFileAsync } from "./writeFileAsync";
 import fs from "fs-extra";
 import crypto from "crypto";
 import { StaticSiteBuildOptions } from "./StaticSiteBuildOptions";
-import { checkMarkInGreen, ellipsis } from "./ConsoleText";
+import { checkMarkInGreen, crossMarkInRed, ellipsis } from "./ConsoleText";
 
 const hashFilePath = "./hashFile.json";
 
@@ -138,9 +141,17 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 
   const end = new Date().getTime();
   ms = end - options.startTime;
-  console.log(
-    `${checkMarkInGreen} Done in ${ms} ms with ${files.length} files\n---------------------------------------------]\n`
-  );
+
+  if (missingKeys.getUniqueTuples().length > 0) {
+    await missingKeyPromise;
+    console.log(
+      `${crossMarkInRed} Run the build again to update with missing keys.\nDone in  ${ms} ms\n---------------------------------------------]\n`
+    );
+  } else {
+    console.log(
+      `${checkMarkInGreen} Done in ${ms} ms with ${files.length} files\n---------------------------------------------]\n`
+    );
+  }
   lock.locked = false;
   await fs.writeFile(lockFilePath, JSON.stringify(lock, null, 2), "utf8");
 }
