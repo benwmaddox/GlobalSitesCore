@@ -124,7 +124,7 @@ export async function getLanguageOptions(
         : "");
     languageOptions.push({
       code: language,
-      name: i18next.t(`Language`),
+      name: i18next.t(`Language`, { ns: "meta" }),
       url: url,
       filePath: url + "index.html",
     });

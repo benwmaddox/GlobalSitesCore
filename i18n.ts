@@ -41,7 +41,7 @@ const i18nOptions: InitOptions = {
     //   `Missing translation for key "${key}" in language "${lng}" and namespace "${ns}"`
     // );
   },
-  ns: ["common", "url"],
+  ns: ["common", "url", "meta"],
 };
 
 i18next.use(Backend).init(i18nOptions);

@@ -4,9 +4,11 @@ export function urlBuilder(
   pageEnglish: string | undefined,
   pagePrefix?: string | undefined
 ): string {
-  return `${i18next.t("lang") == "en" ? "" : i18next.t("lang") + "/"}${
-    directoryEnglish ? i18next.t(directoryEnglish, { ns: "url" }) + "/" : ""
-  }${pagePrefix || ""}${
-    pageEnglish ? i18next.t(pageEnglish, { ns: "url" }) + "/" : ""
-  }`;
+  return `${
+    i18next.t("lang", { ns: "meta" }) == "en"
+      ? ""
+      : i18next.t("lang", { ns: "meta" }) + "/"
+  }${directoryEnglish ? i18next.t(directoryEnglish, { ns: "url" }) + "/" : ""}${
+    pagePrefix || ""
+  }${pageEnglish ? i18next.t(pageEnglish, { ns: "url" }) + "/" : ""}`;
 }
