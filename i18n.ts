@@ -481,14 +481,14 @@ export async function BulkUpdateMissingKeysManual() {
         console.log(
           `Adding ${keys.length} placeholder keys within namespace ${ns} to ${lang} language`
         );
-        // load the existing translations
+
         const filePath = path.resolve(`./src/locales/${lang}/${ns}.json`);
-        // update the existing translations with the new keys
+
         let existingTranslations: Translations = {};
         if (fs.existsSync(filePath)) {
           existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
         }
-        // Add the new keys
+
         for (let key of keys) {
           if (ns === "url") {
             existingTranslations[key] = slugifyText(key);
@@ -496,7 +496,7 @@ export async function BulkUpdateMissingKeysManual() {
             existingTranslations[key] = key;
           }
         }
-        // Sort the keys
+
         existingTranslations = Object.keys(existingTranslations)
           .sort()
           .reduce((obj: Translations, key: string) => {
@@ -505,7 +505,7 @@ export async function BulkUpdateMissingKeysManual() {
           }, {});
 
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
-        // Save the updated translations back to the file
+
         fs.writeFileSync(
           filePath,
           JSON.stringify(existingTranslations, null, 2),
