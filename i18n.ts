@@ -68,18 +68,32 @@ export async function bulkTranslate(
   for (let batchIndex = 0; batchIndex < batchCount; batchIndex++) {
     const batchStart = batchIndex * batchSize;
     const batchEnd = Math.min(batchStart + batchSize, keys.length);
-    const batchKeys = keys.slice(batchStart, batchEnd);
+    let batchKeys = keys.slice(batchStart, batchEnd);
 
-    const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
-
-    let existingTranslations: Translations = {};
-    if (fs.existsSync(filePath)) {
-      existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    var initialBatchKeyCount = batchKeys.length;
+    if (ns !== "url") {
+      var originalBatchKeys = batchKeys;
+      batchKeys = batchKeys.filter((key) => removePluralSuffix(key) === key);
+      if (batchKeys.length !== initialBatchKeyCount) {
+        console.log(
+          `Google Translate does not support pluralization. Some keys will not be translated: ` +
+            originalBatchKeys
+              .filter((key) => removePluralSuffix(key) !== key)
+              .join("\n  ")
+        );
+      }
     }
 
     if (lng === "en") {
       for (let i = 0; i < batchKeys.length; i++) {
         const key = batchKeys[i];
+
+        const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
+
+        let existingTranslations: Translations = {};
+        if (fs.existsSync(filePath)) {
+          existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        }
 
         // Add the new translation
         if (ns === "url") {
@@ -127,13 +141,7 @@ export async function bulkTranslate(
       const translateLocation = "global";
       var contents: string[] = [];
       for (let i = 0; i < batchKeys.length; i++) {
-        if (removePluralSuffix(batchKeys[i]) !== batchKeys[i] && ns !== "url") {
-          console.log(
-            `${crossMarkInRed} Google Translate does not support pluralization. Skipping translation "${batchKeys[i]}" in ${lng}.`
-          );
-        } else {
-          contents.push(ns === "url" ? titleCase(batchKeys[i]) : batchKeys[i]);
-        }
+        contents.push(ns === "url" ? titleCase(batchKeys[i]) : batchKeys[i]);
       }
 
       if (contents.length === 0) {
