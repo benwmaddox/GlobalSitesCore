@@ -80,24 +80,29 @@ export async function renderLanguageFiles(
     );
   }
   for (let language of languageSettings.languages) {
-    await i18next.changeLanguage(language);
-    var match = languageOptions.find((option) => option.code === language);
-    if (!match) {
-      console.error(
-        `Language ${language} not found for file ${options.fileNameInEnglish}`
-      );
-      continue;
-    }
+    try {
+      await i18next.changeLanguage(language);
+      var match = languageOptions.find((option) => option.code === language);
+      if (!match) {
+        console.error(
+          `Language ${language} not found for file ${options.fileNameInEnglish}`
+        );
+        continue;
+      }
 
-    fileResults.push({
-      relativePath: match.filePath,
-      content: await options.render({
-        option: match,
-        allOptions: languageOptions,
-      }),
-      includeInSitemap: options.includeInSitemap,
-      languageOptions: languageOptions,
-    });
+      fileResults.push({
+        relativePath: match.filePath,
+        content: await options.render({
+          option: match,
+          allOptions: languageOptions,
+        }),
+        includeInSitemap: options.includeInSitemap,
+        languageOptions: languageOptions,
+      });
+    } catch (e) {
+      console.error(`Error rendering language ${language}: ${e}`);
+      throw e;
+    }
   }
 
   await i18next.changeLanguage(languageSettings.defaultLanguage);
