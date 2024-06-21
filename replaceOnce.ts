@@ -9,22 +9,15 @@ export function replaceOnce(
   searchText: string,
   replacementText: string
 ): string {
-  const occurrences = originalText.split(searchText).length - 1;
-  if (occurrences !== 1) {
-    throw new Error(
-      //console.error(
-      `The text "${searchText}" appears ${occurrences} times in the ${originalText}. Expected exactly once. Replacement text was "${replacementText}".`
-    );
-  }
-  return originalText.replace(searchText, replacementText);
+  return originalText.replaceOnce(searchText, replacementText);
 }
+
 if (!String.prototype.replaceOnce) {
   String.prototype.replaceOnce = function (searchText, replacementText) {
     const occurrences = this.split(searchText).length - 1;
     if (occurrences !== 1) {
       throw new Error(
-        //console.error(
-        `The text "${searchText}" appears ${occurrences} times in the "${this}". Expected exactly once. Replacement text was "${replacementText}". Look in the locale files to see if something needs to have text replaced.`
+        `Translation with value "${searchText}" appears ${occurrences} times in ${this}. Expected exactly once. Check the src/locale files to see if the translation should be fixed.`
       );
     }
     return this.replace(searchText, replacementText);

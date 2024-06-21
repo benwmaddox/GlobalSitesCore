@@ -449,7 +449,7 @@ export async function translate(
   // }
 }
 
-export async function BulkUpdateMissingKeys() {
+export async function BulkUpdateMissingKeysManual() {
   var uniqueTuples = missingKeys.getUniqueTuples();
   if (uniqueTuples.length > 0) {
     console.log(
@@ -457,8 +457,7 @@ export async function BulkUpdateMissingKeys() {
         uniqueTuples.length +
         " keys\r\n"
     );
-    var totalTuples = uniqueTuples.length;
-    var x = 0;
+
     // grouped by ns and lang (strongly typed)
     var groupedTuples = uniqueTuples.reduce((acc, [key, lang, ns]) => {
       if (!acc.has(ns)) {
@@ -471,6 +470,63 @@ export async function BulkUpdateMissingKeys() {
       return acc;
     }, new Map());
 
+    for (let [ns, langMap] of groupedTuples) {
+      for (let [lang, keys] of langMap) {
+        if (keys.length > 100) {
+          throw new Error(
+            `Likely translating something wrong with ${keys.length} keys. Keys: ` +
+              keys.join(", ")
+          );
+        }
+        console.log(
+          `Adding ${keys.length} placeholder keys within namespace ${ns} to ${lang} language`
+        );
+        // load the existing translations
+        const filePath = path.resolve(`./src/locales/${lang}/${ns}.json`);
+        // update the existing translations with the new keys
+        let existingTranslations: Translations = {};
+        if (fs.existsSync(filePath)) {
+          existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        }
+        // Add the new keys
+        for (let key of keys) {
+          if (ns === "url") {
+            existingTranslations[key] = slugifyText(key);
+          } else {
+            existingTranslations[key] = key;
+          }
+        }
+        // Sort the keys
+        existingTranslations = Object.keys(existingTranslations)
+          .sort()
+          .reduce((obj: Translations, key: string) => {
+            obj[key] = existingTranslations[key];
+            return obj;
+          }, {});
+
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        // Save the updated translations back to the file
+        fs.writeFileSync(
+          filePath,
+          JSON.stringify(existingTranslations, null, 2),
+          "utf-8"
+        );
+      }
+    }
+
+    console.log("Added missing key placeholders to locale files.");
+  }
+}
+
+export async function BulkUpdateMissingKeys() {
+  var uniqueTuples = missingKeys.getUniqueTuples();
+  if (uniqueTuples.length > 0) {
+    console.log(
+      "Preparing to translate missing keys: " +
+        uniqueTuples.length +
+        " keys\r\n"
+    );
+    // grouped by ns and lang (strongly typed)
     var groupedTuples = uniqueTuples.reduce((acc, [key, lang, ns]) => {
       if (!acc.has(ns)) {
         acc.set(ns, new Map());

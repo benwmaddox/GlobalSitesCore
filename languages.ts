@@ -4,6 +4,7 @@ import { FileResult } from "./FileResult";
 
 export var languageSettings = {
   languages: [
+    "ar",
     "bn",
     "de",
     "el",

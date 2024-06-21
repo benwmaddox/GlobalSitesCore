@@ -1,6 +1,7 @@
 import { SiteMap } from "./Sitemap";
 import {
   BulkUpdateMissingKeys as BulkUpdateMissingKeysGoogleTranslate,
+  BulkUpdateMissingKeysManual,
   missingKeys,
 } from "./i18n";
 import { verifyHtmlValidity } from "./verifyHtmlValidity";
@@ -59,7 +60,16 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     options.translationSource === "GoogleTranslate"
       ? BulkUpdateMissingKeysGoogleTranslate()
       : // TODO: handle other translation sources, including manual and openai
-        Promise.resolve();
+      options.translationSource === "Manual"
+      ? BulkUpdateMissingKeysManual()
+      : Promise.resolve();
+
+  if (
+    options.translationSource !== "GoogleTranslate" &&
+    options.translationSource !== "Manual"
+  ) {
+    throw new Error("Translation source not supported yet");
+  }
 
   const templateRendered = new Date().getTime();
 
