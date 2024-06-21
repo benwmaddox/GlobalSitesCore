@@ -6,6 +6,7 @@ import path from "path";
 import { TupleSet } from "./TupleSet";
 import { titleCase } from "./titleCase";
 import { slugifyText } from "./slugify";
+import { crossMarkInRed } from "./ConsoleText";
 
 // All cheap translations for now...
 // TODO: maybe use https://locize.com/ or https://cloud.google.com/translate/pricing
@@ -56,7 +57,6 @@ const i18nOptions: InitOptions = {
 i18next.use(Backend).init(i18nOptions);
 
 export default i18next;
-
 export async function bulkTranslate(
   lng: string,
   ns: string,
@@ -70,21 +70,22 @@ export async function bulkTranslate(
     const batchEnd = Math.min(batchStart + batchSize, keys.length);
     const batchKeys = keys.slice(batchStart, batchEnd);
 
+    const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
+
+    let existingTranslations: Translations = {};
+    if (fs.existsSync(filePath)) {
+      existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    }
+
     if (lng === "en") {
       for (let i = 0; i < batchKeys.length; i++) {
         const key = batchKeys[i];
-        const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
-
-        let existingTranslations: Translations = {};
-        if (fs.existsSync(filePath)) {
-          existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-        }
 
         // Add the new translation
         if (ns === "url") {
-          existingTranslations[key] = slugifyText(key);
+          existingTranslations[key] = slugifyText(removePluralSuffix(key));
         } else {
-          existingTranslations[key] = key;
+          existingTranslations[key] = removePluralSuffix(key);
         }
         // Sort the keys
         existingTranslations = Object.keys(existingTranslations)
@@ -93,6 +94,21 @@ export async function bulkTranslate(
             obj[key] = existingTranslations[key];
             return obj;
           }, {});
+        /* 
+          
+    if (removePluralSuffix(batchKeys[i]) !== batchKeys[i] && ns !== "url") {
+      console.log(
+        `Google Translate does not support pluralization. Replacing value with __. "${
+          batchKeys[i]
+        }": "${removePluralSuffix(batchKeys[i])}" vs "${removePluralSuffix(
+          response.translations[i].translatedText
+        )}".`
+      );
+
+      existingTranslations[batchKeys[i]] = "____";
+      continue;
+    }
+          */
 
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
         // Save the updated translations back to the file
@@ -111,9 +127,21 @@ export async function bulkTranslate(
       const translateLocation = "global";
       var contents: string[] = [];
       for (let i = 0; i < batchKeys.length; i++) {
-        contents.push(ns === "url" ? titleCase(batchKeys[i]) : batchKeys[i]);
+        if (removePluralSuffix(batchKeys[i]) !== batchKeys[i] && ns !== "url") {
+          console.log(
+            `${crossMarkInRed} Google Translate does not support pluralization. Skipping translation "${batchKeys[i]}" in ${lng}.`
+          );
+        } else {
+          contents.push(ns === "url" ? titleCase(batchKeys[i]) : batchKeys[i]);
+        }
       }
 
+      if (contents.length === 0) {
+        console.log(
+          `${crossMarkInRed} No keys to translate with Google. Skipping translation.  Another translation service is needed for any pluralization. Alternately, you can change the translation key to not require pluralization.`
+        );
+        return;
+      }
       // Construct request
       const request = {
         parent: `projects/${projectId}/locations/${translateLocation}`,
@@ -124,8 +152,8 @@ export async function bulkTranslate(
       };
 
       // Run request
+
       const [response] = await translationClient.translateText(request);
-      const translations = response.translations;
 
       const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
       let existingTranslations: Translations = {};
@@ -155,6 +183,17 @@ export async function bulkTranslate(
     }
   }
 }
+
+function removePluralSuffix(key: string) {
+  var regexMatch = key.match(/_.+$/);
+  if (regexMatch) {
+    // replace with "
+    return key.replace(regexMatch[0], "");
+  } else {
+    return key;
+  }
+}
+
 export async function translate(
   key: string,
   lng: string,
