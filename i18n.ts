@@ -76,7 +76,7 @@ export async function bulkTranslate(
       batchKeys = batchKeys.filter((key) => removePluralSuffix(key) === key);
       if (batchKeys.length !== initialBatchKeyCount) {
         console.log(
-          `Google Translate does not support pluralization. Some keys will not be translated: ` +
+          `Google Translate does not support pluralization. Some keys will not be translated:\n  ` +
             originalBatchKeys
               .filter((key) => removePluralSuffix(key) !== key)
               .join("\n  ")
