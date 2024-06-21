@@ -41,6 +41,15 @@ const i18nOptions: InitOptions = {
     //   `Missing translation for key "${key}" in language "${lng}" and namespace "${ns}"`
     // );
   },
+  missingInterpolationHandler: (
+    text: string,
+    value: string,
+    options: InitOptions<object>
+  ) => {
+    throw new Error(
+      `Missing interpolation for key "${text}" with value "${value}".`
+    );
+  },
   ns: ["common", "url", "meta"],
 };
 
@@ -61,55 +70,89 @@ export async function bulkTranslate(
     const batchEnd = Math.min(batchStart + batchSize, keys.length);
     const batchKeys = keys.slice(batchStart, batchEnd);
 
-    const { TranslationServiceClient } = require("@google-cloud/translate");
+    if (lng === "en") {
+      for (let i = 0; i < batchKeys.length; i++) {
+        const key = batchKeys[i];
+        const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
 
-    const translationClient = new TranslationServiceClient();
+        let existingTranslations: Translations = {};
+        if (fs.existsSync(filePath)) {
+          existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        }
 
-    const projectId = "translations-426017";
-    const translateLocation = "global";
-    var contents: string[] = [];
-    for (let i = 0; i < batchKeys.length; i++) {
-      contents.push(ns === "url" ? titleCase(batchKeys[i]) : batchKeys[i]);
+        // Add the new translation
+        if (ns === "url") {
+          existingTranslations[key] = slugifyText(key);
+        } else {
+          existingTranslations[key] = key;
+        }
+        // Sort the keys
+        existingTranslations = Object.keys(existingTranslations)
+          .sort()
+          .reduce((obj: Translations, key: string) => {
+            obj[key] = existingTranslations[key];
+            return obj;
+          }, {});
+
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        // Save the updated translations back to the file
+        fs.writeFileSync(
+          filePath,
+          JSON.stringify(existingTranslations, null, 2),
+          "utf-8"
+        );
+      }
+    } else {
+      const { TranslationServiceClient } = require("@google-cloud/translate");
+
+      const translationClient = new TranslationServiceClient();
+
+      const projectId = "translations-426017";
+      const translateLocation = "global";
+      var contents: string[] = [];
+      for (let i = 0; i < batchKeys.length; i++) {
+        contents.push(ns === "url" ? titleCase(batchKeys[i]) : batchKeys[i]);
+      }
+
+      // Construct request
+      const request = {
+        parent: `projects/${projectId}/locations/${translateLocation}`,
+        contents: contents,
+        mimeType: "text/plain", // mime types: text/plain, text/html
+        sourceLanguageCode: "en",
+        targetLanguageCode: lng,
+      };
+
+      // Run request
+      const [response] = await translationClient.translateText(request);
+      const translations = response.translations;
+
+      const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
+      let existingTranslations: Translations = {};
+      if (fs.existsSync(filePath)) {
+        existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      }
+
+      for (let i = 0; i < response.translations.length; i++) {
+        existingTranslations[batchKeys[i]] =
+          response.translations[i].translatedText;
+      }
+
+      // Sort and save the updated translations
+      existingTranslations = Object.keys(existingTranslations)
+        .sort()
+        .reduce((obj: Translations, key: string) => {
+          obj[key] = existingTranslations[key];
+          return obj;
+        }, {});
+
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(
+        filePath,
+        JSON.stringify(existingTranslations, null, 2),
+        "utf-8"
+      );
     }
-
-    // Construct request
-    const request = {
-      parent: `projects/${projectId}/locations/${translateLocation}`,
-      contents: contents,
-      mimeType: "text/plain", // mime types: text/plain, text/html
-      sourceLanguageCode: "en",
-      targetLanguageCode: lng,
-    };
-
-    // Run request
-    const [response] = await translationClient.translateText(request);
-    const translations = response.translations;
-
-    const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
-    let existingTranslations: Translations = {};
-    if (fs.existsSync(filePath)) {
-      existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    }
-
-    for (let i = 0; i < response.translations.length; i++) {
-      existingTranslations[batchKeys[i]] =
-        response.translations[i].translatedText;
-    }
-
-    // Sort and save the updated translations
-    existingTranslations = Object.keys(existingTranslations)
-      .sort()
-      .reduce((obj: Translations, key: string) => {
-        obj[key] = existingTranslations[key];
-        return obj;
-      }, {});
-
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(
-      filePath,
-      JSON.stringify(existingTranslations, null, 2),
-      "utf-8"
-    );
   }
 }
 export async function translate(
