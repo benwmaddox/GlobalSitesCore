@@ -67,7 +67,8 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 
   if (
     options.translationSource !== "GoogleTranslate" &&
-    options.translationSource !== "Manual"
+    options.translationSource !== "Manual" &&
+    options.translationSource !== "OpenAI"
   ) {
     throw new Error("Translation source not supported yet");
   }
