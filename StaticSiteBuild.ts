@@ -136,16 +136,18 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
       );
     }
 
+    var htmlFiles = files.filter((f) => f.relativePath.endsWith(".html"));
+
     if (options.validationOptions?.HTML === "Full") {
       verifyHtmlValidity(
-        files,
+        htmlFiles,
         options.validationOptions?.HTMLValidationConfig
       );
     }
     if (options.validationOptions?.HTML === "Sample") {
       // sample of 1% of files or 10 random files (whichever is greater)
       const sampleSize = Math.max(Math.ceil(files.length * 0.01), 10);
-      const randomFiles = [...files]
+      const randomFiles = [...htmlFiles]
         .sort(() => 0.5 - Math.random())
         .slice(0, sampleSize);
       verifyHtmlValidity(
