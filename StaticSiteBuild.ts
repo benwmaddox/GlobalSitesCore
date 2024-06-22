@@ -1,7 +1,8 @@
 import { SiteMap } from "./Sitemap";
 import {
-  BulkUpdateMissingKeys as BulkUpdateMissingKeysGoogleTranslate,
+  BulkUpdateMissingKeysGoogleTranslate as BulkUpdateMissingKeysGoogleTranslate,
   BulkUpdateMissingKeysManual,
+  BulkUpdateMissingKeysOpenAI,
   missingKeys,
 } from "./i18n";
 import { verifyHtmlValidity } from "./verifyHtmlValidity";
@@ -62,7 +63,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
       : // TODO: handle other translation sources, including manual and openai
       options.translationSource === "Manual"
       ? BulkUpdateMissingKeysManual()
-      : Promise.resolve();
+      : BulkUpdateMissingKeysOpenAI();
 
   if (
     options.translationSource !== "GoogleTranslate" &&

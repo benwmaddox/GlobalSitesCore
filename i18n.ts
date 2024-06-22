@@ -57,7 +57,144 @@ const i18nOptions: InitOptions = {
 i18next.use(Backend).init(i18nOptions);
 
 export default i18next;
-export async function bulkTranslate(
+export async function bulkTranslateOpenAI(
+  lng: string,
+  ns: string,
+  keys: string[]
+): Promise<void> {
+  const batchSize = 100;
+  const batchCount = Math.ceil(keys.length / batchSize);
+
+  for (let batchIndex = 0; batchIndex < batchCount; batchIndex++) {
+    const batchStart = batchIndex * batchSize;
+    const batchEnd = Math.min(batchStart + batchSize, keys.length);
+
+    var batchKeys = keys.slice(batchStart, batchEnd);
+
+    const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
+
+    let existingTranslations: Translations = {};
+    if (fs.existsSync(filePath)) {
+      existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    }
+    var completion = null;
+    try {
+      const openai = new OpenAI();
+      completion = await openai.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content:
+              `You are a helpful assistant designed to output JSON. The format should be { "key1": "value1", "key2": "value2" }.` +
+              (ns === "url"
+                ? ` This is meant to be used in a url and should not contain spaces or any characters not safe for URLs.`
+                : ""),
+          },
+          {
+            role: "user",
+            content: `Please translate the following text from english (en) to language code ${lng}. Using the i18next format for these. 
+            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. It should not be included as a translated word.: \n${
+              // for urls, making sure it is easier to translate so using title case
+              ns === "url"
+                ? batchKeys.map((key) => titleCase(key) + "\n")
+                : batchKeys.map((key) => key + "\n")
+            }`,
+          },
+        ],
+        // Cheap model for short keys, expensive model for long keys
+        model: gptModelShort, // TODO  key.length > 200 ? gptModelLong : gptModelShort,
+      });
+    } catch (error) {
+      // log all completions to log.txt
+      if (error instanceof Error) {
+        console.error(
+          `Error fetching translation from OpenAI: ${error.message}`
+        );
+        console.error(error.stack);
+        // fs.appendFileSync(
+        //   "log.txt",
+        //   `Error fetching translation from OpenAI: ${error.message}\n`
+        // );
+      } else {
+        console.error(`Unknown error: ${error}`);
+        fs.appendFileSync("log.txt", `Unknown error: ${error}\n`);
+      }
+    }
+
+    if (!completion) {
+      return;
+    }
+    let content: { translation: Record<string, string> } = {
+      translation: {},
+    };
+
+    try {
+      var messageContent = completion.choices[0].message.content;
+      if (!messageContent) {
+        throw new Error("Message content is empty");
+      }
+      if (messageContent.includes("```json")) {
+        //remove leading ```json and trailing ```
+        messageContent = messageContent.replace("```json", "");
+        messageContent = messageContent.replace("```", "");
+      }
+      // replace all newlines and other control characters with spaces - openai sometimes returns newlines which it shouldn't here.
+      messageContent = messageContent
+        .replace(/\n/g, " ")
+        .replace(/\r/g, " ")
+        .replace(/\t/g, " ");
+      content = JSON.parse(messageContent || "[{translation: {}}]");
+      if (typeof content !== "object" || content === null) {
+        throw new Error("Content is not a valid object. Content: " + content);
+      }
+
+      for (const [key, value] of Object.entries(content.translation)) {
+        var translation = value;
+        if (ns === "url") {
+          translation = slugifyText(translation);
+        }
+        if (!batchKeys.includes(key)) {
+          const titleCasedBatchKey = batchKeys
+            .map((k) => titleCase(k))
+            .find((k) => k === key);
+          if (titleCasedBatchKey) {
+            existingTranslations[titleCasedBatchKey] = translation;
+          } else {
+            console.error(
+              `Key "${key}" not found in batch keys. Skipping translation.`
+            );
+          }
+        } else {
+          existingTranslations[key] = translation;
+        }
+      }
+    } catch (error: unknown) {
+      console.error(
+        `Error parsing JSON response from OpenAI: ${
+          completion.choices[0].message.content
+        } \n\n\n${error instanceof Error ? error.message : error}\n\n\n`
+      );
+      console.error(completion);
+    }
+    // Sort the keys
+    existingTranslations = Object.keys(existingTranslations)
+      .sort()
+      .reduce((obj: Translations, key: string) => {
+        obj[key] = existingTranslations[key];
+        return obj;
+      }, {});
+
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    // Save the updated translations back to the file
+    fs.writeFileSync(
+      filePath,
+      JSON.stringify(existingTranslations, null, 2),
+      "utf-8"
+    );
+  }
+}
+
+export async function bulkTranslateGoogleTranslate(
   lng: string,
   ns: string,
   keys: string[]
@@ -574,7 +711,7 @@ export async function BulkUpdateMissingKeysManual() {
   }
 }
 
-export async function BulkUpdateMissingKeys() {
+export async function BulkUpdateMissingKeysGoogleTranslate() {
   var uniqueTuples = missingKeys.getUniqueTuples();
   if (uniqueTuples.length > 0) {
     console.log(
@@ -605,7 +742,45 @@ export async function BulkUpdateMissingKeys() {
         console.log(
           `Translating ${keys.length} keys within namespace ${ns} to ${lang} language`
         );
-        await bulkTranslate(lang, ns, keys); // Assume bulkTranslate is an async function
+        await bulkTranslateGoogleTranslate(lang, ns, keys); // Assume bulkTranslate is an async function
+      }
+    }
+    console.log("Done translating missing keys");
+  }
+}
+
+export async function BulkUpdateMissingKeysOpenAI() {
+  var uniqueTuples = missingKeys.getUniqueTuples();
+  if (uniqueTuples.length > 0) {
+    console.log(
+      "Preparing to translate missing keys: " +
+        uniqueTuples.length +
+        " keys\r\n"
+    );
+    // grouped by ns and lang (strongly typed)
+    var groupedTuples = uniqueTuples.reduce((acc, [key, lang, ns]) => {
+      if (!acc.has(ns)) {
+        acc.set(ns, new Map());
+      }
+      if (!acc.get(ns).has(lang)) {
+        acc.get(ns).set(lang, []);
+      }
+      acc.get(ns).get(lang).push(key);
+      return acc;
+    }, new Map());
+
+    for (let [ns, langMap] of groupedTuples) {
+      for (let [lang, keys] of langMap) {
+        if (keys.length > 100) {
+          throw new Error(
+            `Likely translating something wrong with ${keys.length} keys. Keys: ` +
+              keys.join(", ")
+          );
+        }
+        console.log(
+          `Translating ${keys.length} keys within namespace ${ns} to ${lang} language`
+        );
+        await bulkTranslateOpenAI(lang, ns, keys); // Assume bulkTranslate is an async function
       }
     }
     console.log("Done translating missing keys");
