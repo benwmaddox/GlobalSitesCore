@@ -93,7 +93,7 @@ export async function bulkTranslateOpenAI(
           {
             role: "user",
             content: `Please translate the following text from english (en) to language code ${lng}. Using the i18next format for these. 
-            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. It should not be included as a translated word.: \n${
+            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. It should not be included as a translated word. The keys are the original phrase. The values are the translations.: \n${
               // for urls, making sure it is easier to translate so using title case
               ns === "url"
                 ? batchKeys.map((key) => titleCase(key) + "\n")
@@ -102,7 +102,7 @@ export async function bulkTranslateOpenAI(
           },
         ],
         // Cheap model for short keys, expensive model for long keys
-        model: gptModelShort, // TODO  key.length > 200 ? gptModelLong : gptModelShort,
+        model: gptModelLong, // TODO  key.length > 200 ? gptModelLong : gptModelShort,
       });
     } catch (error) {
       // log all completions to log.txt
@@ -124,12 +124,10 @@ export async function bulkTranslateOpenAI(
     if (!completion) {
       return;
     }
-    let content: { translation: Record<string, string> } = {
-      translation: {},
-    };
-
+    let content: Record<string, string> = {};
+    var messageContent: string | null = "";
     try {
-      var messageContent = completion.choices[0].message.content;
+      messageContent = completion.choices[0].message.content;
       if (!messageContent) {
         throw new Error("Message content is empty");
       }
@@ -143,12 +141,12 @@ export async function bulkTranslateOpenAI(
         .replace(/\n/g, " ")
         .replace(/\r/g, " ")
         .replace(/\t/g, " ");
-      content = JSON.parse(messageContent || "[{translation: {}}]");
+      content = JSON.parse(messageContent || "{}");
       if (typeof content !== "object" || content === null) {
         throw new Error("Content is not a valid object. Content: " + content);
       }
 
-      for (const [key, value] of Object.entries(content.translation)) {
+      for (const [key, value] of Object.entries(content)) {
         var translation = value;
         if (ns === "url") {
           translation = slugifyText(translation);
@@ -172,7 +170,9 @@ export async function bulkTranslateOpenAI(
       console.error(
         `Error parsing JSON response from OpenAI: ${
           completion.choices[0].message.content
-        } \n\n\n${error instanceof Error ? error.message : error}\n\n\n`
+        }\n\n\nProcessed: ${messageContent} \n\n\n${
+          error instanceof Error ? error.message : error
+        }\n\n\n`
       );
       console.error(completion);
     }
@@ -339,308 +339,308 @@ function removePluralSuffix(key: string) {
   }
 }
 
-export async function translate(
-  key: string,
-  lng: string,
-  ns: string
-): Promise<void> {
-  if (key === "") {
-    // throw new Error("Key is empty");
-    return;
-  }
-  let useOpenAI = false;
-  let useGoogleTranslate = true;
-  let translation = key;
-  if (lng === "en") {
-    useOpenAI = false;
-    useGoogleTranslate = false;
-  }
-  let completion: any;
+// export async function translate(
+//   key: string,
+//   lng: string,
+//   ns: string
+// ): Promise<void> {
+//   if (key === "") {
+//     // throw new Error("Key is empty");
+//     return;
+//   }
+//   let useOpenAI = false;
+//   let useGoogleTranslate = true;
+//   let translation = key;
+//   if (lng === "en") {
+//     useOpenAI = false;
+//     useGoogleTranslate = false;
+//   }
+//   let completion: any;
 
-  lastApiCallTime = Date.now();
+//   lastApiCallTime = Date.now();
 
-  console.log(
-    `${new Date().toLocaleTimeString()} | Translating key "${key}" to language "${lng}" in namespace "${ns}"`
-  );
-  // Use OpenAI to generate the translation
-  if (useOpenAI) {
-    try {
-      const openai = new OpenAI();
-      completion = await openai.chat.completions.create({
-        messages: [
-          {
-            role: "system",
-            content:
-              `You are a helpful assistant designed to output JSON. The format should be { "translation": "value" }.` +
-              (ns === "url"
-                ? ` This is meant to be used in a url and should not contain spaces or any characters not safe for URLs.`
-                : ""),
-          },
-          {
-            role: "user",
-            content: `Please translate the following text from english (en) to language code ${lng}: "${
-              // for urls, making sure it is easier to translate so using title case
-              ns === "url" ? titleCase(key) : key
-            }"`,
-          },
-        ],
-        // Cheap model for short keys, expensive model for long keys
-        model: key.length > 200 ? gptModelLong : gptModelShort,
-      });
-    } catch (error) {
-      // log all completions to log.txt
-      if (error instanceof Error) {
-        console.error(
-          `Error fetching translation from OpenAI: ${error.message}`
-        );
-        console.error(error.stack);
-        // fs.appendFileSync(
-        //   "log.txt",
-        //   `Error fetching translation from OpenAI: ${error.message}\n`
-        // );
-      } else {
-        console.error(`Unknown error: ${error}`);
-        fs.appendFileSync("log.txt", `Unknown error: ${error}\n`);
-      }
-    }
+//   console.log(
+//     `${new Date().toLocaleTimeString()} | Translating key "${key}" to language "${lng}" in namespace "${ns}"`
+//   );
+//   // Use OpenAI to generate the translation
+//   if (useOpenAI) {
+//     try {
+//       const openai = new OpenAI();
+//       completion = await openai.chat.completions.create({
+//         messages: [
+//           {
+//             role: "system",
+//             content:
+//               `You are a helpful assistant designed to output JSON. The format should be { "translation": "value" }.` +
+//               (ns === "url"
+//                 ? ` This is meant to be used in a url and should not contain spaces or any characters not safe for URLs.`
+//                 : ""),
+//           },
+//           {
+//             role: "user",
+//             content: `Please translate the following text from english (en) to language code ${lng}: "${
+//               // for urls, making sure it is easier to translate so using title case
+//               ns === "url" ? titleCase(key) : key
+//             }"`,
+//           },
+//         ],
+//         // Cheap model for short keys, expensive model for long keys
+//         model: key.length > 200 ? gptModelLong : gptModelShort,
+//       });
+//     } catch (error) {
+//       // log all completions to log.txt
+//       if (error instanceof Error) {
+//         console.error(
+//           `Error fetching translation from OpenAI: ${error.message}`
+//         );
+//         console.error(error.stack);
+//         // fs.appendFileSync(
+//         //   "log.txt",
+//         //   `Error fetching translation from OpenAI: ${error.message}\n`
+//         // );
+//       } else {
+//         console.error(`Unknown error: ${error}`);
+//         fs.appendFileSync("log.txt", `Unknown error: ${error}\n`);
+//       }
+//     }
 
-    if (!completion) {
-      return;
-    }
-    let content = { translation: "" };
-    let translation = "";
+//     if (!completion) {
+//       return;
+//     }
+//     let content = { [key]: key };
+//     let translation = "";
 
-    // log all completions to log.txt
-    fs.appendFileSync(
-      "log.txt",
-      +"\n\n----------------\n" +
-        " Key: " +
-        key +
-        " Language: " +
-        lng +
-        " Namespace: " +
-        ns +
-        "\n\n" +
-        JSON.stringify(completion, null, 2) +
-        "\n\n----------------\n\n"
-    );
+//     // log all completions to log.txt
+//     fs.appendFileSync(
+//       "log.txt",
+//       +"\n\n----------------\n" +
+//         " Key: " +
+//         key +
+//         " Language: " +
+//         lng +
+//         " Namespace: " +
+//         ns +
+//         "\n\n" +
+//         JSON.stringify(completion, null, 2) +
+//         "\n\n----------------\n\n"
+//     );
 
-    // if the key contains %, it is likely translating in error. Skip it.
-    if (key.includes("%")) {
-      console.error(`Skipping key "${key}" as it contains %`);
-      return;
-    }
+//     // if the key contains %, it is likely translating in error. Skip it.
+//     if (key.includes("%")) {
+//       console.error(`Skipping key "${key}" as it contains %`);
+//       return;
+//     }
+//     var messageContent = "";
+//     try {
+//       messageContent = completion.choices[0].message.content;
+//       if (messageContent.includes("```json")) {
+//         //remove leading ```json and trailing ```
+//         messageContent = messageContent.replace("```json", "");
+//         messageContent = messageContent.replace("```", "");
+//       }
+//       // replace all newlines and other control characters with spaces - openai sometimes returns newlines which it shouldn't here.
+//       messageContent = messageContent
+//         .replace(/\n/g, " ")
+//         .replace(/\r/g, " ")
+//         .replace(/\t/g, " ");
+//       content = JSON.parse(messageContent || "{}");
+//     } catch (error: unknown) {
+//       console.error(
+//         `Error parsing JSON response from OpenAI: ${
+//           completion.choices[0].message.content
+//         }\n\n\nprocessed message ${messageContent}
+//          \n\n\n${error instanceof Error ? error.message : error}\n\n\n`
+//       );
+//       console.error(completion);
 
-    try {
-      var messageContent = completion.choices[0].message.content;
-      if (messageContent.includes("```json")) {
-        //remove leading ```json and trailing ```
-        messageContent = messageContent.replace("```json", "");
-        messageContent = messageContent.replace("```", "");
-      }
-      // replace all newlines and other control characters with spaces - openai sometimes returns newlines which it shouldn't here.
-      messageContent = messageContent
-        .replace(/\n/g, " ")
-        .replace(/\r/g, " ")
-        .replace(/\t/g, " ");
-      content = JSON.parse(messageContent || "{}");
-      translation = content.translation;
-    } catch (error: unknown) {
-      console.error(
-        `Error parsing JSON response from OpenAI: ${
-          completion.choices[0].message.content
-        } \n\n\n${error instanceof Error ? error.message : error}\n\n\n`
-      );
-      console.error(completion);
+//       // write content to file
+//       fs.appendFileSync(
+//         "log.txt",
+//         `
+//     ----
+//     Key: ${key}
+//     Language: ${lng}
+//     Namespace: ${ns}
+//     Error parsing JSON response from OpenAI: ${
+//       completion.choices[0].message.content
+//     }
+//     ${error instanceof Error ? error.message : error}
+//     ${JSON.stringify(completion, null, 2)}
+//     ----`
+//       );
+//       // Temp measure dealing with things that can't translate currently
+//       translation = "____";
+//       // return;
+//     }
+//     if (!translation) {
+//       throw new Error(
+//         `Translation not found in the response for key "${key}" in language "${lng}". response was ${JSON.stringify(
+//           completion
+//         )}`
+//       );
+//     }
+//   } else if (useGoogleTranslate) {
+//     const { TranslationServiceClient } = require("@google-cloud/translate");
 
-      // write content to file
-      fs.appendFileSync(
-        "log.txt",
-        `
-    ----
-    Key: ${key}
-    Language: ${lng}
-    Namespace: ${ns}
-    Error parsing JSON response from OpenAI: ${
-      completion.choices[0].message.content
-    }
-    ${error instanceof Error ? error.message : error}
-    ${JSON.stringify(completion, null, 2)}
-    ----`
-      );
-      // Temp measure dealing with things that can't translate currently
-      translation = "____";
-      // return;
-    }
-    if (!translation) {
-      throw new Error(
-        `Translation not found in the response for key "${key}" in language "${lng}". response was ${JSON.stringify(
-          completion
-        )}`
-      );
-    }
-  } else if (useGoogleTranslate) {
-    const { TranslationServiceClient } = require("@google-cloud/translate");
+//     const translationClient = new TranslationServiceClient();
 
-    const translationClient = new TranslationServiceClient();
+//     const projectId = "translations-426017";
+//     const translateLocation = "global";
+//     const text = ns === "url" ? titleCase(key) : key;
 
-    const projectId = "translations-426017";
-    const translateLocation = "global";
-    const text = ns === "url" ? titleCase(key) : key;
+//     // Construct request
+//     const request = {
+//       parent: `projects/${projectId}/locations/${translateLocation}`,
+//       contents: [text],
+//       mimeType: "text/plain", // mime types: text/plain, text/html
+//       sourceLanguageCode: "en",
+//       targetLanguageCode: lng,
+//     };
 
-    // Construct request
-    const request = {
-      parent: `projects/${projectId}/locations/${translateLocation}`,
-      contents: [text],
-      mimeType: "text/plain", // mime types: text/plain, text/html
-      sourceLanguageCode: "en",
-      targetLanguageCode: lng,
-    };
+//     // Run request
+//     const [response] = await translationClient.translateText(request);
 
-    // Run request
-    const [response] = await translationClient.translateText(request);
+//     for (const googleTranslation of response.translations) {
+//       translation = googleTranslation.translatedText;
+//     }
+//   }
 
-    for (const googleTranslation of response.translations) {
-      translation = googleTranslation.translatedText;
-    }
-  }
+//   // Load the existing translations
+//   const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
+//   // const missingFilePath = path.resolve(
+//   //   `./src/locales/${lng}/${ns}.missing.json`
+//   // );
 
-  // Load the existing translations
-  const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
-  // const missingFilePath = path.resolve(
-  //   `./src/locales/${lng}/${ns}.missing.json`
-  // );
+//   let existingTranslations: Translations = {};
+//   if (fs.existsSync(filePath)) {
+//     existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+//   } else {
+//     // make dir
+//     fs.mkdirSync(path.dirname(filePath), { recursive: true });
+//     // write file
+//     fs.writeFileSync(filePath, "{}", "utf-8");
+//   }
 
-  let existingTranslations: Translations = {};
-  if (fs.existsSync(filePath)) {
-    existingTranslations = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-  } else {
-    // make dir
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    // write file
-    fs.writeFileSync(filePath, "{}", "utf-8");
-  }
+//   // Add the new translation
+//   existingTranslations[key] = translation;
+//   // Sort the keys
+//   existingTranslations = Object.keys(existingTranslations)
+//     .sort()
+//     .reduce((obj: Translations, key: string) => {
+//       obj[key] = existingTranslations[key];
+//       return obj;
+//     }, {});
 
-  // Add the new translation
-  existingTranslations[key] = translation;
-  // Sort the keys
-  existingTranslations = Object.keys(existingTranslations)
-    .sort()
-    .reduce((obj: Translations, key: string) => {
-      obj[key] = existingTranslations[key];
-      return obj;
-    }, {});
+//   for (let key in existingTranslations) {
+//     let translation = existingTranslations[key];
+//     if (ns === "url") {
+//       // Working around some - issues with translations
 
-  for (let key in existingTranslations) {
-    let translation = existingTranslations[key];
-    if (ns === "url") {
-      // Working around some - issues with translations
+//       existingTranslations[key] = slugifyText(translation);
+//     } else {
+//       if (
+//         !key.includes("-") &&
+//         key.includes(" ") &&
+//         translation.includes("-")
+//       ) {
+//         translation = translation.replace(/-/g, " ");
+//         existingTranslations[key] = translation;
+//       }
+//     }
 
-      existingTranslations[key] = slugifyText(translation);
-    } else {
-      if (
-        !key.includes("-") &&
-        key.includes(" ") &&
-        translation.includes("-")
-      ) {
-        translation = translation.replace(/-/g, " ");
-        existingTranslations[key] = translation;
-      }
-    }
+//     // Translation cleanup
+//     if (false) {
+//       // if translation is exact match for key and it isn't in English, remove the key to reprocess in the future
+//       if (
+//         key === translation &&
+//         lng !== "en" &&
+//         /*key contains any letters*/ /[a-zA-Z]/.test(key) &&
+//         key.length > 3
+//       ) {
+//         console.log(
+//           `Removing key "${key}" from language ${lng} as it is an exact match`
+//         );
+//         delete existingTranslations[key];
+//       }
+//       // If the key is the same other than _ being replaced with - and the translation is the same, remove the key
+//       else if (
+//         key
+//           .replace(/_/g, "")
+//           .replace(/-/g, "")
+//           .replace(/ /g, "")
+//           .toLowerCase() ===
+//           translation
+//             .replace(/_/g, "")
+//             .replace(/-/g, "")
+//             .replace(/ /g, "")
+//             .toLowerCase() &&
+//         lng !== "en" &&
+//         /*key contains any letters*/ /[a-zA-Z]/.test(key) &&
+//         key.length > 3
+//       ) {
+//         console.log(
+//           `Removing key "${key}" from language ${lng} as it is a match (with underscores/dashes)`
+//         );
+//         delete existingTranslations[key];
+//       }
+//       // if the translation is the translation code, remove the key
+//       else if (lng === translation && key !== "lang") {
+//         console.log(
+//           `Removing key "${key}" from language ${lng} as it is the language name`
+//         );
+//         delete existingTranslations[key];
+//       }
+//       // If the translation starts with the language code and :, remove the key
+//       else if (translation.startsWith(lng + ":") && key !== "lang") {
+//         // replace lang: with the rest of the translation
+//         translation = translation.replace(lng + ":", "");
+//         existingTranslations[key] = translation;
+//       }
+//     }
+//   }
+//   // make sure directory exists
+//   fs.mkdirSync(path.dirname(filePath), { recursive: true });
+//   // Save the updated translations back to the file
+//   fs.writeFileSync(
+//     filePath,
+//     JSON.stringify(existingTranslations, null, 2),
+//     "utf-8"
+//   );
 
-    // Translation cleanup
-    if (false) {
-      // if translation is exact match for key and it isn't in English, remove the key to reprocess in the future
-      if (
-        key === translation &&
-        lng !== "en" &&
-        /*key contains any letters*/ /[a-zA-Z]/.test(key) &&
-        key.length > 3
-      ) {
-        console.log(
-          `Removing key "${key}" from language ${lng} as it is an exact match`
-        );
-        delete existingTranslations[key];
-      }
-      // If the key is the same other than _ being replaced with - and the translation is the same, remove the key
-      else if (
-        key
-          .replace(/_/g, "")
-          .replace(/-/g, "")
-          .replace(/ /g, "")
-          .toLowerCase() ===
-          translation
-            .replace(/_/g, "")
-            .replace(/-/g, "")
-            .replace(/ /g, "")
-            .toLowerCase() &&
-        lng !== "en" &&
-        /*key contains any letters*/ /[a-zA-Z]/.test(key) &&
-        key.length > 3
-      ) {
-        console.log(
-          `Removing key "${key}" from language ${lng} as it is a match (with underscores/dashes)`
-        );
-        delete existingTranslations[key];
-      }
-      // if the translation is the translation code, remove the key
-      else if (lng === translation && key !== "lang") {
-        console.log(
-          `Removing key "${key}" from language ${lng} as it is the language name`
-        );
-        delete existingTranslations[key];
-      }
-      // If the translation starts with the language code and :, remove the key
-      else if (translation.startsWith(lng + ":") && key !== "lang") {
-        // replace lang: with the rest of the translation
-        translation = translation.replace(lng + ":", "");
-        existingTranslations[key] = translation;
-      }
-    }
-  }
-  // make sure directory exists
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  // Save the updated translations back to the file
-  fs.writeFileSync(
-    filePath,
-    JSON.stringify(existingTranslations, null, 2),
-    "utf-8"
-  );
+//   // Also save to the missing file for tracking
+//   // let missingTranslations: Translations = {};
+//   // if (fs.existsSync(missingFilePath)) {
+//   //   missingTranslations = JSON.parse(fs.readFileSync(missingFilePath, "utf-8"));
+//   // }
 
-  // Also save to the missing file for tracking
-  // let missingTranslations: Translations = {};
-  // if (fs.existsSync(missingFilePath)) {
-  //   missingTranslations = JSON.parse(fs.readFileSync(missingFilePath, "utf-8"));
-  // }
+//   // missingTranslations[key] = translation;
 
-  // missingTranslations[key] = translation;
+//   // // for each translation, check if it contains a "-" and the key doesn't contain a "-"
+//   // for (let key in missingTranslations) {
+//   //   let translation = missingTranslations[key];
+//   //   // Working around some - issues with translations
+//   //   if (key.includes("-") && translation.includes(" ")) {
+//   //     translation = translation.replace(/ /g, "-");
+//   //     missingTranslations[key] = translation;
+//   //   } else if (!key.includes("-") && translation.includes("-")) {
+//   //     translation = translation.replace(/-/g, " ");
+//   //     missingTranslations[key] = translation;
+//   //   }
+//   // }
 
-  // // for each translation, check if it contains a "-" and the key doesn't contain a "-"
-  // for (let key in missingTranslations) {
-  //   let translation = missingTranslations[key];
-  //   // Working around some - issues with translations
-  //   if (key.includes("-") && translation.includes(" ")) {
-  //     translation = translation.replace(/ /g, "-");
-  //     missingTranslations[key] = translation;
-  //   } else if (!key.includes("-") && translation.includes("-")) {
-  //     translation = translation.replace(/-/g, " ");
-  //     missingTranslations[key] = translation;
-  //   }
-  // }
+//   // fs.writeFileSync(
+//   //   missingFilePath,
+//   //   JSON.stringify(missingTranslations, null, 2),
+//   //   "utf-8"
+//   // );
 
-  // fs.writeFileSync(
-  //   missingFilePath,
-  //   JSON.stringify(missingTranslations, null, 2),
-  //   "utf-8"
-  // );
-
-  // if (error instanceof Error) {
-  //   console.error(`Error fetching translation from OpenAI: ${error.message}`);
-  //   console.error(error.stack);
-  // } else {
-  //   console.error(`Unknown error: ${error}`);
-  // }
-}
+//   // if (error instanceof Error) {
+//   //   console.error(`Error fetching translation from OpenAI: ${error.message}`);
+//   //   console.error(error.stack);
+//   // } else {
+//   //   console.error(`Unknown error: ${error}`);
+//   // }
+// }
 
 export async function BulkUpdateMissingKeysManual() {
   var uniqueTuples = missingKeys.getUniqueTuples();
