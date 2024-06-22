@@ -151,16 +151,13 @@ export async function bulkTranslateOpenAI(
         if (ns === "url") {
           translation = slugifyText(translation);
         }
+        translation = postTranslationProcessing(translation, key, ns);
         if (!batchKeys.includes(key)) {
-          const titleCasedBatchKey = batchKeys
-            .map((k) => titleCase(k))
-            .find((k) => k === key);
-          if (titleCasedBatchKey) {
-            existingTranslations[titleCasedBatchKey] = translation;
+          var match = batchKeys.find((x) => titleCase(x) === key);
+          if (match) {
+            existingTranslations[match] = translation;
           } else {
-            console.error(
-              `Key "${key}" not found in batch keys. Skipping translation.`
-            );
+            existingTranslations[key] = translation;
           }
         } else {
           existingTranslations[key] = translation;
@@ -192,6 +189,36 @@ export async function bulkTranslateOpenAI(
       "utf-8"
     );
   }
+}
+
+function postTranslationProcessing(
+  translation: string,
+  key: string,
+  ns: string
+) {
+  if (ns === "url") {
+    // Working around some - issues with translations
+    return slugifyText(translation);
+  } else {
+    if (!key.includes("-") && key.includes(" ") && translation.includes("-")) {
+      return translation.replace(/-/g, " ");
+    }
+  }
+  // if it still has placeholder { } in translation and in source, make sure the translation uses the same word as the source. Some translations translate the placeholder by mistake.
+  var keywordsInKey = key.match(/{[^}]+}/g);
+  var keywordsInTranslation = translation.match(/{[^}]+}/g);
+  if (keywordsInKey && keywordsInTranslation) {
+    for (let i = 0; i < keywordsInKey.length; i++) {
+      if (keywordsInKey[i] !== keywordsInTranslation[i]) {
+        translation = translation.replace(
+          keywordsInTranslation[i],
+          keywordsInKey[i]
+        );
+      }
+    }
+  }
+
+  return translation;
 }
 
 export async function bulkTranslateGoogleTranslate(
@@ -307,8 +334,11 @@ export async function bulkTranslateGoogleTranslate(
       }
 
       for (let i = 0; i < response.translations.length; i++) {
-        existingTranslations[batchKeys[i]] =
-          response.translations[i].translatedText;
+        existingTranslations[batchKeys[i]] = postTranslationProcessing(
+          response.translations[i].translatedText,
+          batchKeys[i],
+          ns
+        );
       }
 
       // Sort and save the updated translations
