@@ -43,7 +43,7 @@ export interface RenderProps {
 }
 export interface RenderLanguageFileOptions {
   fileNameReplacements?: { [key: string]: string };
-  fileDirectoryInEnglish: string | undefined;
+  subDirectoryInEnglish: string | undefined;
   fileNameInEnglish: string | undefined;
   includeInSitemap: boolean;
   render: (props: RenderProps) => string;
