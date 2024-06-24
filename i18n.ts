@@ -714,9 +714,17 @@ export async function BulkUpdateMissingKeysManual() {
 
         for (let key of keys) {
           if (ns === "url") {
-            existingTranslations[key] = `__${slugifyText(key)}__`;
+            if (lang === "en") {
+              existingTranslations[key] = slugifyText(key);
+            } else {
+              existingTranslations[key] = `__${slugifyText(key)}__`;
+            }
           } else {
-            existingTranslations[key] = `[[${key}]]`;
+            if (lang === "en") {
+              existingTranslations[key] = key;
+            } else {
+              existingTranslations[key] = `[[${key}]]`;
+            }
           }
         }
 
