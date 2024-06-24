@@ -14,3 +14,5 @@ npm run watch
 ```
 
 If you're using VSCode or Cursor, run the command "open with live server".
+
+If more details are needed, please reach out to ben@maddoxlabs.com
