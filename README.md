@@ -20,6 +20,6 @@ If you're using VSCode or Cursor, run the command "open with live server".
 # Deployments:
 
 - To deploy, you may have to update the .gitmodules file. Since it is a private repository, a personal token is needed. Change the url to:
-  https://[token]@github.com/benwmaddox/GlobalSitesCore.git
+  https://<your_personal_access_token>@github.com/benwmaddox/GlobalSitesCore.git
 
 If more details are needed, please reach out to ben@maddoxlabs.com
