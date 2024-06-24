@@ -714,9 +714,9 @@ export async function BulkUpdateMissingKeysManual() {
 
         for (let key of keys) {
           if (ns === "url") {
-            existingTranslations[key] = slugifyText(key);
+            existingTranslations[key] = `__${slugifyText(key)}__`;
           } else {
-            existingTranslations[key] = key;
+            existingTranslations[key] = `[[${key}]]`;
           }
         }
 
