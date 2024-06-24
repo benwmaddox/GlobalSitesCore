@@ -717,7 +717,7 @@ export async function BulkUpdateMissingKeysManual() {
             if (lang === "en") {
               existingTranslations[key] = slugifyText(key);
             } else {
-              existingTranslations[key] = `__${slugifyText(key)}__`;
+              existingTranslations[key] = `[[${slugifyText(key)}]]`;
             }
           } else {
             if (lang === "en") {
