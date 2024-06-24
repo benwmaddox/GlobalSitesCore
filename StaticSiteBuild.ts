@@ -13,6 +13,7 @@ import fs from "fs-extra";
 import crypto from "crypto";
 import { StaticSiteBuildOptions } from "./StaticSiteBuildOptions";
 import { checkMarkInGreen, crossMarkInRed, ellipsis } from "./ConsoleText";
+import { RobotsTXTPages } from "./RobotsTXT";
 
 const hashFilePath = "./hashFile.json";
 
@@ -91,6 +92,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 
     let ms = templateRendered - options.startTime;
     files.push(...SiteMap(files, options.baseUrl));
+    files.push(...(await RobotsTXTPages(options.baseUrl)));
 
     const currentHashes = await loadHashes();
     const newHashes = {};
