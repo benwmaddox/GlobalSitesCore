@@ -7,6 +7,5 @@ export function slugifyText(input: string): string {
     .replace(/,/g, "-")
     .replace(/\(/g, "-")
     .replace(/\)/g, "-")
-    .replace(/--/g, "-")
-    .toLowerCase();
+    .replace(/--/g, "-");
 }

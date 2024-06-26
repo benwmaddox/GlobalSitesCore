@@ -90,8 +90,18 @@ export function verifyInternalUrls(
       return;
     }
     if (!okUrls.has(url)) {
+      // closest matches (before and after) alphabetically from defined urls
+      var closestMatchAMatches = Array.from(definedUrls)
+        .filter((definedUrl) => definedUrl > url)
+        .sort((a, b) => b.localeCompare(a));
+      var closestMatchA = closestMatchAMatches[closestMatchAMatches.length - 1];
+
+      var closestMatchB = Array.from(definedUrls)
+        .filter((definedUrl) => definedUrl < url)
+        .sort((a, b) => b.localeCompare(a))[0];
+
       errors.push(
-        `Url ${url} was found in content and is not defined as a file.`
+        `Url ${url} was found in content and is not defined as a file. Closest matches: ${closestMatchA} | ${closestMatchB}.`
       );
     }
   });
@@ -105,7 +115,7 @@ export function verifyInternalUrls(
 
   if (errors.length > 0) {
     console.error("Internal URL errors:");
-    console.error(errors);
+    console.error({ errors });
   } else {
     console.log(`${checkMarkInGreen} No internal URL errors found`);
   }

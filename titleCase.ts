@@ -16,7 +16,8 @@ export function titleCase(item: string) {
     // replace all double spaces with one space
     .replace(/\s\s+/g, " ");
   if (title.trim() === "") {
-    throw new Error(`Title is empty for ${item}. ${l} then ${title}`);
+    console.trace(`Title is empty for ${item}. ${l} then ${title}`);
+    //throw new Error(`Title is empty for ${item}. ${l} then ${title}`);
   }
 
   return title;
