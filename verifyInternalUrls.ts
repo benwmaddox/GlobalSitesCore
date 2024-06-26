@@ -91,10 +91,9 @@ export function verifyInternalUrls(
     }
     if (!okUrls.has(url)) {
       // closest matches (before and after) alphabetically from defined urls
-      var closestMatchAMatches = Array.from(definedUrls)
+      var closestMatchA = Array.from(definedUrls)
         .filter((definedUrl) => definedUrl > url)
-        .sort((a, b) => b.localeCompare(a));
-      var closestMatchA = closestMatchAMatches[closestMatchAMatches.length - 1];
+        .sort((a, b) => a.localeCompare(b))[0];
 
       var closestMatchB = Array.from(definedUrls)
         .filter((definedUrl) => definedUrl < url)
