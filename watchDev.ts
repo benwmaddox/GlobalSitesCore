@@ -47,5 +47,5 @@ const watcher = chokidar.watch("src/**/*.*", {
 watcher.on("all", (event, path) => {
   console.log(`File ${path} has been ${event}`);
   changeDetected = true;
-  setTimeout(handleChange, 100);
+  setTimeout(handleChange, 0);
 });
