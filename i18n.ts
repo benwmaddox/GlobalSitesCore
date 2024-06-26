@@ -769,6 +769,8 @@ export async function BulkUpdateMissingKeysGoogleTranslate() {
       return acc;
     }, new Map());
 
+    var translationPromises: Promise<void>[] = [];
+
     for (let [ns, langMap] of groupedTuples) {
       for (let [lang, keys] of langMap) {
         if (keys.length > 100) {
@@ -780,9 +782,10 @@ export async function BulkUpdateMissingKeysGoogleTranslate() {
         console.log(
           `Translating ${keys.length} keys within namespace ${ns} to ${lang} language`
         );
-        await bulkTranslateGoogleTranslate(lang, ns, keys); // Assume bulkTranslate is an async function
+        translationPromises.push(bulkTranslateGoogleTranslate(lang, ns, keys));
       }
     }
+    await Promise.all(translationPromises);
     console.log("Done translating missing keys");
   }
 }
@@ -807,6 +810,7 @@ export async function BulkUpdateMissingKeysOpenAI() {
       return acc;
     }, new Map());
 
+    var translationPromises: Promise<void>[] = [];
     for (let [ns, langMap] of groupedTuples) {
       for (let [lang, keys] of langMap) {
         if (keys.length > 100) {
@@ -818,9 +822,10 @@ export async function BulkUpdateMissingKeysOpenAI() {
         console.log(
           `Translating ${keys.length} keys within namespace ${ns} to ${lang} language`
         );
-        await bulkTranslateOpenAI(lang, ns, keys); // Assume bulkTranslate is an async function
+        translationPromises.push(bulkTranslateOpenAI(lang, ns, keys));
       }
     }
+    await Promise.all(translationPromises);
     console.log("Done translating missing keys");
   }
 }
