@@ -62,6 +62,7 @@ export function verifyHtmlValidity(
     console.log(
       `${crossMarkInRed} Finished verifying ${filesChecked} HTML files with ${htmlErrors} errors`
     );
+    throw new Error("HTML validation failed");
   } else {
     console.log(
       `${checkMarkInGreen} Finished verifying ${filesChecked} HTML files`

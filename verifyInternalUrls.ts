@@ -8,7 +8,7 @@ export function verifyInternalUrls(
   ignoreUrls: string[]
 ): string[] {
   console.log(`${ellipsis} Verifying internal URLs`);
-  var errorLimit = 100;
+  var errorLimit = 20;
 
   var definedUrls = new Set<string>();
   files.forEach((file) => {
@@ -115,6 +115,8 @@ export function verifyInternalUrls(
   if (errors.length > 0) {
     console.error("Internal URL errors:");
     console.error({ errors });
+
+    throw new Error("Internal URL errors found");
   } else {
     console.log(`${checkMarkInGreen} No internal URL errors found`);
   }
