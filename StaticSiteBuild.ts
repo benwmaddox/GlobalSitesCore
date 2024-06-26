@@ -38,20 +38,7 @@ async function saveHashes(hashes: Record<string, string>) {
   await fs.writeFile(hashFilePath, JSON.stringify(hashes, null, 2), "utf8");
 }
 export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
-  var lockFilePath = "./staticSiteBuildLock.json";
   try {
-    var lockFile = fs.existsSync(lockFilePath)
-      ? fs.readFileSync(lockFilePath, "utf8")
-      : "{}";
-    var lock = JSON.parse(lockFile);
-    if (lock.locked) {
-      //console.log(
-      //  `${ellipsis} Changes detected. Static Site Build is currently running. If this is in error, delete staticSiteBuildLock.json file and try again.`
-      //);
-      return;
-    }
-    lock.locked = true;
-    fs.writeFileSync(lockFilePath, JSON.stringify(lock, null, 2), "utf8");
     const maxConcurrentWrites = 50;
     console.log(
       `\n[---------------------------------------------\n${ellipsis} Starting build for ${options.baseUrl}`
@@ -186,11 +173,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
         `${checkMarkInGreen} Done in ${ms} ms with ${files.length} files\n---------------------------------------------]\n`
       );
     }
-    lock.locked = false;
   } catch (e) {
     console.error(e);
-  } finally {
-    lock.locked = false;
-    await fs.writeFile(lockFilePath, JSON.stringify(lock, null, 2), "utf8");
   }
 }
