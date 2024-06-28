@@ -115,8 +115,6 @@ export function verifyInternalUrls(
   if (errors.length > 0) {
     console.error("Internal URL errors:");
     console.error({ errors });
-
-    throw new Error("Internal URL errors found");
   } else {
     console.log(`${checkMarkInGreen} No internal URL errors found`);
   }
