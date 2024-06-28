@@ -53,6 +53,7 @@ export async function renderLanguageFiles(
 ): Promise<FileResult[]> {
   var fileResults: FileResult[] = [];
   var languageOptions = await getLanguageOptions(
+    options.subDirectoryInEnglish,
     options.fileNameInEnglish,
     undefined
   );
@@ -110,6 +111,7 @@ export async function renderLanguageFiles(
 }
 
 export async function getLanguageOptions(
+  subDirectoryInEnglish: string | undefined,
   fileNameWithoutNumberInEnglish: string | undefined,
   i: number | undefined
 ): Promise<LanguageOption[]> {
@@ -122,6 +124,7 @@ export async function getLanguageOptions(
       : undefined;
     var url =
       (language === "en" ? "/" : `/${language}/`) +
+      (subDirectoryInEnglish ? i18next.t(subDirectoryInEnglish) + "/" : "") +
       (fileNameWithoutNumber
         ? i !== undefined
           ? `${i}-${fileNameWithoutNumber}/`
