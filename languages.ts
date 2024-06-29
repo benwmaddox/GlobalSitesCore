@@ -124,7 +124,9 @@ export async function getLanguageOptions(
       : undefined;
     var url =
       (language === "en" ? "/" : `/${language}/`) +
-      (subDirectoryInEnglish ? i18next.t(subDirectoryInEnglish) + "/" : "") +
+      (subDirectoryInEnglish
+        ? i18next.t(subDirectoryInEnglish, { ns: "url" }) + "/"
+        : "") +
       (fileNameWithoutNumber
         ? i !== undefined
           ? `${i}-${fileNameWithoutNumber}/`
