@@ -21,6 +21,9 @@ export function verifyInternalUrls(
     if (url.endsWith(".html")) {
       url = url.slice(0, -5) + "/";
     }
+    if (url.endsWith(".js")) {
+      console.log({ url });
+    }
     definedUrls.add(url);
   });
 
@@ -28,9 +31,19 @@ export function verifyInternalUrls(
   var urlsInContentWithoutMatch = new Set<string>();
   var errors: string[] = [];
   files.forEach((file) => {
+    if (file.relativePath.endsWith(".js")) {
+      console.log({
+        relativePath: file.relativePath,
+        href: new URL(file.relativePath, baseUrl).href,
+      });
+    }
     if (typeof file.content === "string") {
       let matches = file.content.match(/href="\/[^"]*"/g);
-      var fileUrl = new URL(file.relativePath, baseUrl).href;
+      var fileUrl = new URL(file.relativePath
+        //replace all \ with /
+        .replace(/\\/g, "/"), baseUrl).href;
+        
+        , baseUrl).href;
       // if ends with .index.html, remove it
       if (fileUrl.endsWith("index.html")) {
         fileUrl = fileUrl.slice(0, -10);
@@ -173,10 +186,10 @@ export function verifyInternalUrls(
         return matrix[a.length][b.length];
       }
 
-      var closestMatchc = findClosestMatch(url, definedUrls);
+      var closestMatchC = findClosestMatch(url, definedUrls);
 
       errors.push(
-        `Url ${url} was found in content and is not defined as a file. Closest matches: ${closestMatchA} | ${closestMatchB} | ${closestMatchc}.`
+        `Url ${url} was found in content and is not defined as a file. Closest matches: ${closestMatchA} | ${closestMatchB} | ${closestMatchC}.`
       );
     }
   });
