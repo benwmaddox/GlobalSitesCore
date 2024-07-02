@@ -9,7 +9,6 @@ export async function CopyStaticFiles(options?: {
   var srcDir = options?.srcDir || path.join("src", "static");
   var destDir = options?.destDir || "dest";
 
-  console.log(`Copying static files from ${srcDir} to ${destDir}`);
   var files: FileResult[] = [];
 
   // Helper function to compare file metadata and copy if different
