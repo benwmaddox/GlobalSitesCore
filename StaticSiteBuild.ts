@@ -1,9 +1,8 @@
 import { SiteMap } from "./Sitemap";
 import {
-  BulkUpdateMissingKeysGoogleTranslate as BulkUpdateMissingKeysGoogleTranslate,
+  BulkUpdateMissingKeysGoogleTranslate,
   BulkUpdateMissingKeysManual,
   BulkUpdateMissingKeysOpenAI,
-  bulkTranslateGoogleTranslate,
   missingKeys,
 } from "./i18n";
 import { verifyHtmlValidity } from "./verifyHtmlValidity";
