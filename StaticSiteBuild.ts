@@ -184,5 +184,6 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     }
   } catch (e) {
     console.error(e);
+    throw e;
   }
 }
