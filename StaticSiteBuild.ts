@@ -129,7 +129,8 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
     if (options.validationOptions?.HTML === "Full") {
       verifyHtmlValidity(
         htmlFiles,
-        options.validationOptions?.HTMLValidationConfig
+        options.validationOptions?.HTMLValidationConfig,
+        options.validationOptions?.throwErrors
       );
     } else if (options.validationOptions?.HTML === "Sample") {
       // sample of 1% of files or 10 random files (whichever is greater)
@@ -139,7 +140,8 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
         .slice(0, sampleSize);
       verifyHtmlValidity(
         randomFiles,
-        options.validationOptions?.HTMLValidationConfig
+        options.validationOptions?.HTMLValidationConfig,
+        options.validationOptions?.throwErrors
       );
     }
 
@@ -151,6 +153,14 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
           options.validationOptions?.skipUrls || []
         ),
       ];
+      if (internalURLErrors.length > 0) {
+        console.log(
+          `${crossMarkInRed} Found ${internalURLErrors.length} internal URL errors`
+        );
+        if (options.validationOptions?.throwErrors === true) {
+          throw new Error("Internal URL errors found");
+        }
+      }
     }
 
     await missingKeyPromise;

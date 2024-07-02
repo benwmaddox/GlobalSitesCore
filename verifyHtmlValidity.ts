@@ -4,7 +4,8 @@ import { checkMarkInGreen, crossMarkInRed, ellipsis } from "./ConsoleText";
 
 export function verifyHtmlValidity(
   files: FileResult[],
-  options: ConfigData | undefined
+  options: ConfigData | undefined,
+  throwErrors?: boolean
 ) {
   console.log(`${ellipsis} Verifying HTML is valid`);
   var validator = new HtmlValidate(
@@ -55,6 +56,10 @@ export function verifyHtmlValidity(
           message: message.message,
           ruleUrl: message.ruleUrl,
         });
+
+        if (throwErrors === true) {
+          throw new Error("Internal URL errors found");
+        }
       }
     }
   });

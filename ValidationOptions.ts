@@ -9,4 +9,5 @@ export interface ValidationOptions {
    */
   HTMLValidationConfig?: ConfigData;
   skipUrls?: string[];
+  throwErrors?: boolean;
 }
