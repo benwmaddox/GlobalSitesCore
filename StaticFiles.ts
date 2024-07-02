@@ -8,6 +8,7 @@ export async function CopyStaticFiles(options?: {
 }): Promise<FileResult[]> {
   var srcDir = options?.srcDir || path.join("src", "static");
   var destDir = options?.destDir || "dest";
+  var destinationRoot = "dest";
 
   var files: FileResult[] = [];
 
@@ -41,7 +42,7 @@ export async function CopyStaticFiles(options?: {
         // console.log(`${srcPath} is the same as ${destPath}`);
       }
       files.push({
-        relativePath: path.relative(destDir, destPath),
+        relativePath: path.relative(destinationRoot, destPath),
         includeInSitemap: false, // destPath.endsWith(".html"),
         content: undefined,
         languageOptions: [],
