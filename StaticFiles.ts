@@ -2,10 +2,14 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { FileResult } from "./FileResult";
 
-export async function CopyStaticFiles(): Promise<FileResult[]> {
-  const srcDir = path.join("src", "static");
-  const destDir = "dest";
+export async function CopyStaticFiles(options?: {
+  srcDir: string;
+  destDir: string;
+}): Promise<FileResult[]> {
+  var srcDir = options?.srcDir || path.join("src", "static");
+  var destDir = options?.destDir || "dest";
 
+  console.log(`Copying static files from ${srcDir} to ${destDir}`);
   var files: FileResult[] = [];
 
   // Helper function to compare file metadata and copy if different
