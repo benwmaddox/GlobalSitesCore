@@ -39,11 +39,13 @@ export function verifyInternalUrls(
     }
     if (typeof file.content === "string") {
       let matches = file.content.match(/href="\/[^"]*"/g);
-      var fileUrl = new URL(file.relativePath
-        //replace all \ with /
-        .replace(/\\/g, "/"), baseUrl).href;
-        
-        , baseUrl).href;
+      var fileUrl = new URL(
+        file.relativePath
+          //replace all \ with /
+          .replace(/\\/g, "/"),
+
+        baseUrl
+      ).href;
       // if ends with .index.html, remove it
       if (fileUrl.endsWith("index.html")) {
         fileUrl = fileUrl.slice(0, -10);
