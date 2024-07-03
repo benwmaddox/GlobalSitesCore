@@ -189,7 +189,7 @@ export function verifyInternalUrls(
       var closestMatchC = findClosestMatch(url, definedUrls);
 
       errors.push(
-        `Url ${url} was found in content and is not defined as a file. Closest matches: ${closestMatchA} | ${closestMatchB} | ${closestMatchC}.`
+        `Url ${url} was found in content and is not defined as a file. Closest matches: ${closestMatchA} |\n ${closestMatchB} |\n ${closestMatchC}.`
       );
     }
   });
@@ -203,7 +203,7 @@ export function verifyInternalUrls(
 
   if (errors.length > 0) {
     console.error("Internal URL errors:");
-    console.error({ errors });
+    console.error({ errors, definedUrls, urlsInContentWithoutMatch });
   } else {
     console.log(`${checkMarkInGreen} No internal URL errors found`);
   }
