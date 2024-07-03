@@ -42,7 +42,10 @@ export async function CopyStaticFiles(options?: {
         // console.log(`${srcPath} is the same as ${destPath}`);
       }
       files.push({
-        relativePath: destPath.replaceOnce(destinationRoot, "."),
+        relativePath: destPath
+          .replaceOnce(destinationRoot, ".")
+          //replace all \ with /
+          .replace(/\\/g, "/"),
         includeInSitemap: false, // destPath.endsWith(".html"),
         content: undefined,
         languageOptions: [],

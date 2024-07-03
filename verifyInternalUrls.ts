@@ -40,9 +40,7 @@ export function verifyInternalUrls(
     if (typeof file.content === "string") {
       let matches = file.content.match(/href="\/[^"]*"/g);
       var fileUrl = new URL(
-        file.relativePath
-          //replace all \ with /
-          .replace(/\\/g, "/"),
+        file.relativePath,
 
         baseUrl
       ).href;
