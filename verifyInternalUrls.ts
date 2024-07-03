@@ -21,9 +21,6 @@ export function verifyInternalUrls(
     if (url.endsWith(".html")) {
       url = url.slice(0, -5) + "/";
     }
-    if (url.endsWith(".js")) {
-      console.log({ url });
-    }
     definedUrls.add(url);
   });
 
@@ -31,12 +28,6 @@ export function verifyInternalUrls(
   var urlsInContentWithoutMatch = new Set<string>();
   var errors: string[] = [];
   files.forEach((file) => {
-    if (file.relativePath.endsWith(".js")) {
-      console.log({
-        relativePath: file.relativePath,
-        href: new URL(file.relativePath, baseUrl).href,
-      });
-    }
     if (typeof file.content === "string") {
       let matches = file.content.match(/href="\/[^"]*"/g);
       var fileUrl = new URL(
