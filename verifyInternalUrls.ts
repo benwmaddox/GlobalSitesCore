@@ -30,7 +30,11 @@ export function verifyInternalUrls(
   files.forEach((file) => {
     if (typeof file.content === "string") {
       let matches = file.content.match(/href="\/[^"]*"/g);
-      var fileUrl = new URL(file.relativePath, baseUrl).href;
+      var fileUrl = new URL(
+        file.relativePath,
+
+        baseUrl
+      ).href;
       // if ends with .index.html, remove it
       if (fileUrl.endsWith("index.html")) {
         fileUrl = fileUrl.slice(0, -10);
@@ -131,8 +135,52 @@ export function verifyInternalUrls(
         .filter((definedUrl) => definedUrl < url)
         .sort((a, b) => b.localeCompare(a))[0];
 
+      function findClosestMatch(
+        url: string,
+        definedUrls: Set<string>
+      ): string | null {
+        let closestMatch: string | null = null;
+        let closestDistance = Infinity;
+
+        definedUrls.forEach((definedUrl) => {
+          const distance = levenshteinDistance(url, definedUrl);
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestMatch = definedUrl;
+          }
+        });
+
+        return closestMatch;
+      }
+
+      function levenshteinDistance(a: string, b: string): number {
+        const matrix = Array.from({ length: a.length + 1 }, () =>
+          Array(b.length + 1).fill(0)
+        );
+
+        for (let i = 0; i <= a.length; i++) {
+          for (let j = 0; j <= b.length; j++) {
+            if (i === 0) {
+              matrix[i][j] = j;
+            } else if (j === 0) {
+              matrix[i][j] = i;
+            } else {
+              matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1,
+                matrix[i][j - 1] + 1,
+                matrix[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+              );
+            }
+          }
+        }
+
+        return matrix[a.length][b.length];
+      }
+
+      var closestMatchC = findClosestMatch(url, definedUrls);
+
       errors.push(
-        `Url ${url} was found in content and is not defined as a file. Closest matches: ${closestMatchA} | ${closestMatchB}.`
+        `Url ${url} was found in content and is not defined as a file. Closest matches: ${closestMatchA} |\n ${closestMatchB} |\n ${closestMatchC}.`
       );
     }
   });
@@ -146,7 +194,7 @@ export function verifyInternalUrls(
 
   if (errors.length > 0) {
     console.error("Internal URL errors:");
-    console.error({ errors });
+    console.error({ errors, definedUrls, urlsInContentWithoutMatch });
   } else {
     console.log(`${checkMarkInGreen} No internal URL errors found`);
   }

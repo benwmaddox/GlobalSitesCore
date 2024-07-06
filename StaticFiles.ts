@@ -27,6 +27,16 @@ export async function CopyStaticFiles(options?: {
           // Destination file does not exist
           console.log(`Copying ${srcPath} to ${destPath}`);
           await fs.copyFile(srcPath, destPath);
+
+          files.push({
+            relativePath: destPath
+              .replaceOnce(destinationRoot, ".")
+              //replace all \ with /
+              .replace(/\\/g, "/"),
+            includeInSitemap: false, // destPath.endsWith(".html"),
+            content: undefined,
+            languageOptions: [],
+          });
           return;
         } else {
           throw error;
@@ -42,7 +52,10 @@ export async function CopyStaticFiles(options?: {
         // console.log(`${srcPath} is the same as ${destPath}`);
       }
       files.push({
-        relativePath: destPath.replaceOnce(destinationRoot, "."),
+        relativePath: destPath
+          .replaceOnce(destinationRoot, ".")
+          //replace all \ with /
+          .replace(/\\/g, "/"),
         includeInSitemap: false, // destPath.endsWith(".html"),
         content: undefined,
         languageOptions: [],
@@ -73,12 +86,3 @@ export async function CopyStaticFiles(options?: {
   await scanDirectory(srcDir);
   return files;
 }
-
-// Usage example
-(async () => {
-  try {
-    await CopyStaticFiles();
-  } catch (error) {
-    console.error("Error copying files:", error);
-  }
-})();
