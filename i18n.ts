@@ -7,6 +7,7 @@ import { TupleSet } from "./TupleSet";
 import { titleCase } from "./titleCase";
 import { slugifyText } from "./slugify";
 import { crossMarkInRed } from "./ConsoleText";
+import { languageSettings } from "./languages";
 
 // All cheap translations for now...
 // TODO: maybe use https://locize.com/ or https://cloud.google.com/translate/pricing
@@ -22,7 +23,7 @@ let lastApiCallTime = 0;
 export let missingKeys = new TupleSet();
 
 const i18nOptions: InitOptions = {
-  lng: "en",
+  lng: languageSettings.defaultLanguage,
   fallbackLng: false,
   backend: {
     loadPath: "./src/locales/{{lng}}/{{ns}}.json",
@@ -248,7 +249,7 @@ export async function bulkTranslateGoogleTranslate(
       }
     }
 
-    if (lng === "en") {
+    if (lng === languageSettings.defaultLanguage) {
       for (let i = 0; i < batchKeys.length; i++) {
         const key = batchKeys[i];
 
@@ -319,7 +320,7 @@ export async function bulkTranslateGoogleTranslate(
         parent: `projects/${projectId}/locations/${translateLocation}`,
         contents: contents,
         mimeType: "text/plain", // mime types: text/plain, text/html
-        sourceLanguageCode: "en",
+        sourceLanguageCode: languageSettings.defaultLanguage,
         targetLanguageCode: lng,
       };
 
@@ -714,13 +715,13 @@ export async function BulkUpdateMissingKeysManual() {
 
         for (let key of keys) {
           if (ns === "url") {
-            if (lang === "en") {
+            if (lang === languageSettings.defaultLanguage) {
               existingTranslations[key] = slugifyText(key);
             } else {
               existingTranslations[key] = `[[${slugifyText(key)}]]`;
             }
           } else {
-            if (lang === "en") {
+            if (lang === languageSettings.defaultLanguage) {
               existingTranslations[key] = key;
             } else {
               existingTranslations[key] = `[[${key}]]`;

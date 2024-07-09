@@ -46,6 +46,6 @@ export function languageOptionDropDown(
           option.code === lang ? "selected" : ""
         }>${option.name}</option>`;
       })
-      .join("")}
+      .join("\n")}
   </select>`;
 }

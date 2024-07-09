@@ -123,7 +123,7 @@ export async function getLanguageOptions(
       ? i18next.t(fileNameWithoutNumberInEnglish, { ns: "url" })
       : undefined;
     var url =
-      (language === "en" ? "/" : `/${language}/`) +
+      (language === languageSettings.defaultLanguage ? "/" : `/${language}/`) +
       (subDirectoryInEnglish
         ? i18next.t(subDirectoryInEnglish, { ns: "url" }) + "/"
         : "") +
