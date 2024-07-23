@@ -87,13 +87,13 @@ export async function bulkTranslateOpenAI(
             content:
               `You are a helpful assistant designed to output JSON. The format should be { "key1": "value1", "key2": "value2" }.` +
               (ns === "url"
-                ? ` This is meant to be used in a url and should not contain spaces or any characters not safe for URLs.`
+                ? ` This is meant to be used in a url and should not contain spaces or any characters not safe for URLs other than {{ and }} which are used as placeholders.  Use - as word separators.`
                 : ""),
           },
           {
             role: "user",
             content: `Please translate the following text from english (en) to language code ${lng}. Using the i18next format for these. 
-            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. It should not be included as a translated word. The keys are the original phrase. The values are the translations.: \n${
+            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. The keys are the original phrase. The values are the translations. Any translation key that has {{}} should not be translated but treated as a replacement placeholder. Keep the {{}} in the key and translation. \n${
               // for urls, making sure it is easier to translate so using title case
               ns === "url"
                 ? batchKeys.map((key) => titleCase(key) + "\n")
@@ -145,7 +145,13 @@ export async function bulkTranslateOpenAI(
         throw new Error("Content is not a valid object. Content: " + content);
       }
 
-      for (const [key, value] of Object.entries(content)) {
+      var batchKeyIndex = 0;
+      for (const [destKey, value] of Object.entries(content)) {
+        var key = batchKeys[batchKeyIndex];
+        batchKeyIndex++;
+        console.log(
+          `---\nTranslating key "${key}" to "${destKey}"\n${value}\n---`
+        );
         var translation = value;
         if (ns === "url") {
           translation = slugifyText(translation);
