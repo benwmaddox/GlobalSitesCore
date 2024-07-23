@@ -28,8 +28,10 @@ export function GeneralPrivacyPolicy(
   var meOrUs = options.individualOrBusiness === "individual" ? "me" : "us";
 
   return /* HTML */ `
-    <h1>${title}</h1>
-    <p>${metaDescription}</p>
+    <section>
+      <h1>${title}</h1>
+      <p>${metaDescription}</p>
+    </section>
 
     <section id="introduction">
       <h2>${i18next.t("Introduction")}</h2>
