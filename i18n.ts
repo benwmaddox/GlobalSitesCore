@@ -12,8 +12,7 @@ import { languageSettings } from "./languages";
 // All cheap translations for now...
 // TODO: maybe use https://locize.com/ or https://cloud.google.com/translate/pricing
 
-const gptModelLong = "gpt-4o";
-const gptModelShort = "gpt-3.5-turbo";
+const gptModel = "gpt-4o-mini";
 
 interface Translations {
   [key: string]: string;
@@ -102,8 +101,7 @@ export async function bulkTranslateOpenAI(
             }`,
           },
         ],
-        // Cheap model for short keys, expensive model for long keys
-        model: gptModelLong, // TODO  key.length > 200 ? gptModelLong : gptModelShort,
+        model: gptModel,
       });
     } catch (error) {
       // log all completions to log.txt
