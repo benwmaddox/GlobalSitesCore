@@ -149,9 +149,7 @@ export async function bulkTranslateOpenAI(
       for (const [destKey, value] of Object.entries(content)) {
         var key = batchKeys[batchKeyIndex];
         batchKeyIndex++;
-        console.log(
-          `---\nTranslating key "${key}" to "${destKey}"\n${value}\n---`
-        );
+        console.log(`---\nTranslating key "${key}":\n${value}\n---`);
         var translation = value;
         if (ns === "url") {
           translation = slugifyText(translation);
