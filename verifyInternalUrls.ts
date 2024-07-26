@@ -73,6 +73,21 @@ export function verifyInternalUrls(
           }
         });
       }
+      matches = file.content.match(/content="[^"]*"/g);
+      if (matches) {
+        matches.forEach((match) => {
+          var matchedUrl = new URL(match.slice(9, -1), fileUrl).href;
+          var isOnSameDomain = matchedUrl.startsWith(baseUrl);
+          if (!isOnSameDomain) {
+            return;
+          }
+          if (!definedUrls.has(matchedUrl)) {
+            urlsInContentWithoutMatch.add(matchedUrl);
+          } else if (!definedUrlsReferenced.has(matchedUrl)) {
+            definedUrlsReferenced.add(matchedUrl);
+          }
+        });
+      }
 
       matches = file.content.match(/url\([^)]*\)/g);
       if (matches) {
