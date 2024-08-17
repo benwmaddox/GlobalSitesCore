@@ -16,6 +16,7 @@ import { languageSettings } from './languages';
 // TODO: maybe use https://locize.com/ or https://cloud.google.com/translate/pricing
 
 const gptModel = 'gpt-4o-mini';
+const maxTranslationsPerCall = 100;
 
 interface Translations {
 	[key: string]: string;
@@ -46,6 +47,8 @@ const i18nOptions: InitOptions = {
 		// );
 	},
 	missingInterpolationHandler: (text: string, value: string, options: InitOptions<object>) => {
+		// exclude from blog posts, which may have inline code
+		if (options.ns === 'blog') return value;
 		throw new Error(`Missing interpolation for key "${text}" with value "${value}".`);
 	},
 	ns: ['common', 'url', 'meta', 'blog']
@@ -648,7 +651,7 @@ export async function BulkUpdateMissingKeysManual() {
 
 		for (let [ns, langMap] of groupedTuples) {
 			for (let [lang, keys] of langMap) {
-				if (keys.length > 100) {
+				if (keys.length > maxTranslationsPerCall) {
 					throw new Error(
 						`Likely translating something wrong with ${keys.length} keys. Keys: ` +
 							keys.join(', ')
@@ -718,7 +721,7 @@ export async function BulkUpdateMissingKeysGoogleTranslate() {
 
 		for (let [ns, langMap] of groupedTuples) {
 			for (let [lang, keys] of langMap) {
-				if (keys.length > 100) {
+				if (keys.length > maxTranslationsPerCall) {
 					throw new Error(
 						`Likely translating something wrong with ${keys.length} keys. Keys: ` +
 							keys.join(', ')
@@ -754,7 +757,7 @@ export async function BulkUpdateMissingKeysOpenAI() {
 		var translationPromises: Promise<void>[] = [];
 		for (let [ns, langMap] of groupedTuples) {
 			for (let [lang, keys] of langMap) {
-				if (keys.length > 100) {
+				if (keys.length > maxTranslationsPerCall) {
 					throw new Error(
 						`Likely translating something wrong with ${keys.length} keys. Keys: ` +
 							keys.join(', ')
