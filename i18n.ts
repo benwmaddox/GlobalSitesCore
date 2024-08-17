@@ -151,7 +151,7 @@ function postTranslationProcessing(translation: string, key: string, ns: string)
 	try {
 		if (ns === 'url') {
 			// Working around some - issues with translations
-			return slugifyText(translation);
+			return slugifyText(translation).toLocaleLowerCase();
 		} else {
 			if (!key.includes('-') && key.includes(' ') && translation.includes('-')) {
 				return translation.replace(/-/g, ' ');
