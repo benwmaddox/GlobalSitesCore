@@ -16,7 +16,7 @@ import { languageSettings } from './languages';
 // TODO: maybe use https://locize.com/ or https://cloud.google.com/translate/pricing
 
 const gptModel = 'gpt-4o-mini';
-const maxTranslationsPerCall = 100;
+const maxTranslationsPerCall = 1000;
 
 interface Translations {
 	[key: string]: string;
