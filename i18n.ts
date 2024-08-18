@@ -76,7 +76,7 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 					{
 						role: 'system',
 						content:
-							`You are a helpful assistant designed to output JSON. The format should be { "t": "translation" }.` +
+							`You are a helpful assistant designed to output JSON. The format should be { "t": "translation" }. Make sure to translate everything. Don't skip portions of the translation.` +
 							(ns === 'url'
 								? ` This is meant to be used in a url and should not contain spaces or any characters not safe for URLs other than {{ and }} which are used as placeholders.  Use - as word separators.`
 								: '') +
