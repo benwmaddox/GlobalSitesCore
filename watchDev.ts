@@ -14,6 +14,12 @@ const executeCommand = async (command: string): Promise<void> => {
 		console.log(stdout);
 		if (stderr) {
 			console.error(stderr);
+			// run once more, just in case.
+			await execPromise(command);
+			console.log(stdout);
+			if (stderr) {
+				console.error(stderr);
+			}
 		}
 	} catch (error) {
 		console.error('Error executing command:', error);

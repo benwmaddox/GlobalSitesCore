@@ -43,6 +43,11 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 	);
 	options.startTime = options.startTime || new Date().getTime();
 
+	// if base url ends with /, show error
+	if (options.baseUrl.endsWith('/')) {
+		console.error(`${crossMarkInRed} Base URL should not end with /`);
+	}
+
 	const files = options.files.flat();
 	if (options.validationOptions?.duplicateFilePaths !== false) {
 		checkForDuplicateFilePaths(files);
