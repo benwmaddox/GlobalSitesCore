@@ -137,16 +137,26 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 				response_format: zodResponseFormat(TranslationFormat, 'translation')
 			});
 
-			if (followUp.choices[0].message.content !== '') {
+			if (
+				followUp.choices[0].message.content != '' &&
+				followUp.choices[0].message.content?.trim() != ''
+			) {
 				console.log(
 					`Follow-up translation for key "${key}":\n${followUp.choices[0].message.content}`
 				);
 
 				if (followUp.choices[0].message.content) {
+					processedTranslation = JSON.parse(followUp.choices[0].message.content).t;
+
 					console.log(
-						`Follow-up translation for key "${key}":\n${followUp.choices[0].message.content} replacing ${processedTranslation}`
+						`Follow-up translation for key "${key}":\n${processedTranslation} replacing ${processedTranslation}`
 					);
-					existingTranslations[key] = JSON.parse(followUp.choices[0].message.content).t;
+					if (ns === 'url') {
+						processedTranslation = slugifyText(processedTranslation);
+					}
+					processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
+
+					existingTranslations[key] = processedTranslation;
 				}
 			}
 		} catch (error: unknown) {
@@ -169,7 +179,7 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 
 	// Save the updated translations back to the file
 	fs.mkdirSync(path.dirname(filePath), { recursive: true });
-	fs.writeFileSync(filePath, JSON.stringify(existingTranslations, null, 1), 'utf-8');
+	fs.writeFileSync(filePath, JSON.stringify(existingTranslations, null, 2), 'utf-8');
 }
 
 function postTranslationProcessing(translation: string, key: string, ns: string): string {
