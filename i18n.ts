@@ -59,18 +59,16 @@ export default i18next;
 export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[]): Promise<void> {
 	const TranslationFormat = z.object({ t: z.string() });
 
+	const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
+	let existingTranslations: Translations = {};
+	if (fs.existsSync(filePath)) {
+		existingTranslations = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+	}
+
 	for (const key of keys) {
-		const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
-
-		let existingTranslations: Translations = {};
-		if (fs.existsSync(filePath)) {
-			existingTranslations = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-		}
-
 		let completion = null;
+		const openai = new OpenAI();
 		try {
-			const openai = new OpenAI();
-
 			completion = await openai.chat.completions.create({
 				messages: [
 					{
@@ -84,9 +82,9 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 					},
 					{
 						role: 'user',
-						content: `Please translate the following text from english (en) to language code ${lng}. The translation key is surrounded by \`\`\` and \`\`\`. Do not split by line breaks within those sections.
+						content: `Please translate the following text from language code (en) to language code (${lng}).
             Note that ending in _one, _other, _few, _many should be treated as pluralization rules. The key is the original phrase. The value is the translation. Any translation key that has {{}} should not be translated but treated as a replacement placeholder. Keep the {{}} in the key and translation. \n${
-				ns === 'url' ? `\`\`\`${titleCase(key)}\`\`\`\n` : `\`\`\`${key}\`\`\`\n`
+				ns === 'url' ? `${titleCase(key)}\n` : `${key}\n`
 			}`
 					}
 				],
@@ -124,17 +122,33 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 			processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
 			existingTranslations[key] = processedTranslation;
 
-			// Sort the keys
-			existingTranslations = Object.keys(existingTranslations)
-				.sort()
-				.reduce((obj: Translations, key: string) => {
-					obj[key] = existingTranslations[key];
-					return obj;
-				}, {});
+			const followUp = await openai.chat.completions.create({
+				messages: [
+					{
+						role: 'system',
+						content: `You are to verify whether the a translation is reasonable. This is from English to ${lng}. If the translation is fine, return an empty translation. If it needs to be corrected, provide the updated translation.`
+					},
+					{
+						role: 'user',
+						content: `${key}\n\nto\n\n${processedTranslation}`
+					}
+				],
+				model: gptModel,
+				response_format: zodResponseFormat(TranslationFormat, 'translation')
+			});
 
-			fs.mkdirSync(path.dirname(filePath), { recursive: true });
-			// Save the updated translations back to the file
-			fs.writeFileSync(filePath, JSON.stringify(existingTranslations, null, 2), 'utf-8');
+			if (followUp.choices[0].message.content !== '') {
+				console.log(
+					`Follow-up translation for key "${key}":\n${followUp.choices[0].message.content}`
+				);
+
+				if (followUp.choices[0].message.content) {
+					console.log(
+						`Follow-up translation for key "${key}":\n${followUp.choices[0].message.content} replacing ${processedTranslation}`
+					);
+					existingTranslations[key] = JSON.parse(followUp.choices[0].message.content).t;
+				}
+			}
 		} catch (error: unknown) {
 			console.error(
 				`Error processing translation for key "${key}": ${
@@ -144,6 +158,18 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 			console.error(completion);
 		}
 	}
+
+	// Sort the keys
+	existingTranslations = Object.keys(existingTranslations)
+		.sort()
+		.reduce((obj: Translations, key: string) => {
+			obj[key] = existingTranslations[key];
+			return obj;
+		}, {});
+
+	// Save the updated translations back to the file
+	fs.mkdirSync(path.dirname(filePath), { recursive: true });
+	fs.writeFileSync(filePath, JSON.stringify(existingTranslations, null, 1), 'utf-8');
 }
 
 function postTranslationProcessing(translation: string, key: string, ns: string): string {
