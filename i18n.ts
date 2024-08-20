@@ -58,12 +58,13 @@ i18next.use(Backend).init(i18nOptions);
 export default i18next;
 export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[]): Promise<void> {
 	const TranslationFormat = z.object({ t: z.string() });
-
 	const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
 	let existingTranslations: Translations = {};
 	if (fs.existsSync(filePath)) {
 		existingTranslations = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 	}
+
+	let processedCount = 0; // Counter for processed keys
 
 	for (const key of keys) {
 		let completion = null;
@@ -162,7 +163,19 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 			);
 			console.error(completion);
 		}
+
+		processedCount++; // Increment the counter
+
+		// Save translations every 25 keys
+		if (processedCount % 25 === 0) {
+			fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+			fs.writeFileSync(filePath, JSON.stringify(existingTranslations, null, 2), 'utf-8');
+			console.log(`Saved translations for ${processedCount} keys.`);
+		}
 	}
+
+	// Final save for any remaining translations
 
 	// Sort the keys
 	existingTranslations = Object.keys(existingTranslations)
@@ -171,9 +184,8 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 			obj[key] = existingTranslations[key];
 			return obj;
 		}, {});
-
-	// Save the updated translations back to the file
 	fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
 	fs.writeFileSync(filePath, JSON.stringify(existingTranslations, null, 2), 'utf-8');
 }
 
