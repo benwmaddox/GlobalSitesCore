@@ -138,26 +138,21 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 			});
 
 			if (
-				followUp.choices[0].message.content != '' &&
-				followUp.choices[0].message.content?.trim() != ''
+				followUp.choices[0].message.content &&
+				followUp.choices[0].message.content.trim() != '' &&
+				followUp.choices[0].message.content.trim() != processedTranslation
 			) {
+				processedTranslation = JSON.parse(followUp.choices[0].message.content).t;
+
 				console.log(
-					`Follow-up translation for key "${key}":\n${followUp.choices[0].message.content}`
+					`Follow-up translation for key "${key}":\n${processedTranslation} replacing ${processedTranslation}`
 				);
-
-				if (followUp.choices[0].message.content) {
-					processedTranslation = JSON.parse(followUp.choices[0].message.content).t;
-
-					console.log(
-						`Follow-up translation for key "${key}":\n${processedTranslation} replacing ${processedTranslation}`
-					);
-					if (ns === 'url') {
-						processedTranslation = slugifyText(processedTranslation);
-					}
-					processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
-
-					existingTranslations[key] = processedTranslation;
+				if (ns === 'url') {
+					processedTranslation = slugifyText(processedTranslation);
 				}
+				processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
+
+				existingTranslations[key] = processedTranslation;
 			}
 		} catch (error: unknown) {
 			console.error(
