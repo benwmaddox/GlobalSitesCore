@@ -78,7 +78,7 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 							(ns === 'url'
 								? ` This is meant to be used in a url and should not contain spaces or any characters not safe for URLs other than {{ and }} which are used as placeholders.  Use - as word separators.`
 								: '') +
-							(ns === 'blog' ? ` This text is formatted as markdown. ` : '')
+							(ns === 'blog' ? ` This is intended as a blog post. ` : '')
 					},
 					{
 						role: 'user',
