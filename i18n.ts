@@ -49,6 +49,7 @@ const i18nOptions: InitOptions = {
 	missingInterpolationHandler: (text: string, value: string, options: InitOptions<object>) => {
 		// exclude from blog posts, which may have inline code
 		if (options.ns === 'blog') return value;
+
 		throw new Error(`Missing interpolation for key "${text}" with value "${value}".`);
 	},
 	ns: ['common', 'url', 'meta', 'blog']
@@ -121,8 +122,11 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 				processedTranslation = slugifyText(processedTranslation);
 			}
 			processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
-			existingTranslations[key] = processedTranslation;
-
+			if (processedTranslation === '') {
+				console.error(`Translation is empty for key "${key}"`);
+			} else {
+				existingTranslations[key] = processedTranslation;
+			}
 			const followUp = await openai.chat.completions.create({
 				messages: [
 					{
@@ -150,7 +154,11 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 				}
 				processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
 
-				existingTranslations[key] = processedTranslation;
+				if (processedTranslation === '') {
+					console.error(`Translation followup is empty for key "${key}"`);
+				} else {
+					existingTranslations[key] = processedTranslation;
+				}
 			}
 		} catch (error: unknown) {
 			console.error(
