@@ -145,9 +145,6 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 			) {
 				processedTranslation = JSON.parse(followUp.choices[0].message.content).t;
 
-				console.log(
-					`Follow-up translation for key "${key}":\n${processedTranslation} replacing ${processedTranslation}`
-				);
 				if (ns === 'url') {
 					processedTranslation = slugifyText(processedTranslation);
 				}
@@ -175,8 +172,6 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 		}
 	}
 
-	// Final save for any remaining translations
-
 	// Sort the keys
 	existingTranslations = Object.keys(existingTranslations)
 		.sort()
@@ -186,6 +181,7 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 		}, {});
 	fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
+	// Final save for any remaining translations
 	fs.writeFileSync(filePath, JSON.stringify(existingTranslations, null, 2), 'utf-8');
 }
 

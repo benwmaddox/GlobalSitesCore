@@ -51,8 +51,8 @@ export interface RenderLanguageFileOptions {
 export async function renderLanguageFiles(
 	options: RenderLanguageFileOptions
 ): Promise<FileResult[]> {
-	var fileResults: FileResult[] = [];
-	var languageOptions = await getLanguageOptions(
+	const fileResults: FileResult[] = [];
+	const languageOptions = await getLanguageOptions(
 		options.subDirectoryInEnglish,
 		options.fileNameInEnglish,
 		undefined
@@ -60,7 +60,7 @@ export async function renderLanguageFiles(
 
 	if (options.fileNameReplacements) {
 		languageOptions.forEach((option) => {
-			for (let key in options.fileNameReplacements) {
+			for (const key in options.fileNameReplacements) {
 				option.filePath = option.filePath.replaceOnce(
 					key,
 					options.fileNameReplacements[key]
@@ -75,10 +75,10 @@ export async function renderLanguageFiles(
 	) {
 		console.warn(`File ${options.fileNameInEnglish} contains {} but no filename replacements`);
 	}
-	for (let language of languageSettings.languages) {
+	for (const language of languageSettings.languages) {
 		try {
 			await i18next.changeLanguage(language);
-			var match = languageOptions.find((option) => option.code === language);
+			const match = languageOptions.find((option) => option.code === language);
 			if (!match) {
 				console.error(
 					`Language ${language} not found for file ${options.fileNameInEnglish}`
