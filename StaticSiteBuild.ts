@@ -13,6 +13,7 @@ import crypto from 'crypto';
 import { StaticSiteBuildOptions } from './StaticSiteBuildOptions';
 import { checkMarkInGreen, crossMarkInRed, ellipsis } from './ConsoleText';
 import { RobotsTXTPages } from './RobotsTXT';
+import { FileResult } from './FileResult';
 
 const hashFilePath = './hashFile.json';
 
@@ -173,7 +174,7 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 	}
 }
 
-function checkForDuplicateFilePaths(files: { relativePath: string }[]): void {
+function checkForDuplicateFilePaths(files: FileResult[]): void {
 	const filesPerPath: Record<string, number> = {};
 	for (const file of files) {
 		filesPerPath[file.relativePath] = (filesPerPath[file.relativePath] || 0) + 1;
@@ -182,6 +183,16 @@ function checkForDuplicateFilePaths(files: { relativePath: string }[]): void {
 	for (const [path, count] of Object.entries(filesPerPath)) {
 		if (count > 1) {
 			console.error(`${crossMarkInRed} ${count} files found for path ${path}`);
+			// if html filename, parse all the files as html  and show titles of each
+			if (path.endsWith('.html')) {
+				const filesWithSamePath = files.filter((f) => f.relativePath === path);
+				for (const file of filesWithSamePath) {
+					const content = file.content instanceof Buffer ? '' : file.content || '';
+					const titleMatch = content.match(/<title>(.*?)<\/title>/);
+					const title = titleMatch ? titleMatch[1] : 'No title found';
+					console.error(`  ${title}`);
+				}
+			}
 		}
 	}
 }

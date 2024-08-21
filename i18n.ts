@@ -192,8 +192,8 @@ function postTranslationProcessing(translation: string, key: string, ns: string)
 	}
 	try {
 		if (ns === 'url') {
-			// Working around some - issues with translations
-			return slugifyText(translation).toLocaleLowerCase();
+			// Working around some - issues with translation
+			return slugifyText(translation).toLocaleLowerCase().replace(/[:/?]/g, '');
 		} else {
 			if (!key.includes('-') && key.includes(' ') && translation.includes('-')) {
 				return translation.replace(/-/g, ' ');
