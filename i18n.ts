@@ -132,7 +132,7 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 				messages: [
 					{
 						role: 'system',
-						content: `You are to verify whether the a translation is reasonable. This is from English to ${lng}. If the translation is fine, return an empty translation. If it needs to be corrected, provide the updated translation.`
+						content: `You are to verify whether the a translation is reasonable. This is from English to ${lng}. If the translation is fine, return an empty translation. If it needs to be corrected, provide the updated translation. Do not include any extra desciption. Just the translation. If no translation is possible, leave it blank.`
 					},
 					{
 						role: 'user',
@@ -173,6 +173,13 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 		if (processedCount % 25 === 0) {
 			fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
+			// Sort the keys
+			existingTranslations = Object.keys(existingTranslations)
+				.sort()
+				.reduce((obj: Translations, key: string) => {
+					obj[key] = existingTranslations[key];
+					return obj;
+				}, {});
 			fs.writeFileSync(filePath, JSON.stringify(existingTranslations, null, 2), 'utf-8');
 			console.log(`Saved translations for ${processedCount} keys.`);
 		}
