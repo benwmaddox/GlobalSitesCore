@@ -122,7 +122,7 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 				processedTranslation = slugifyText(processedTranslation);
 			}
 			processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
-			if (processedTranslation === '') {
+			if (processedTranslation == '') {
 				console.error(`Translation is empty for key "${key}"`);
 			} else {
 				existingTranslations[key] = processedTranslation;
@@ -154,7 +154,7 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 				}
 				processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
 
-				if (processedTranslation === '') {
+				if (processedTranslation == '') {
 					console.error(`Translation followup is empty for key "${key}"`);
 				} else {
 					existingTranslations[key] = processedTranslation;
