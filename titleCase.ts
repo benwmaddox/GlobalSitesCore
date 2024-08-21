@@ -21,33 +21,28 @@ export function titleCase(item: string) {
 	return title;
 }
 
-function standardizeToSentenceCaseSingleLine(str: string): any {
-	// This regex pattern finds words in camelCase, PascalCase, snake_case, and kebab-case
-	const words =
-		str.match(
-			/[A-ZωφεΔθλ]+(?=\s|$)|[a-zωφεΔθλ](?=\s|$)|[A-Za-zωφεΔθλ][a-z]+|[A-Z][a-zωφεΔθλ]+|[0-9]*/g
-		) || [];
-	var result = words
+function standardizeToSentenceCaseSingleLine(str: string): string {
+	// This regex pattern finds words in various cases, including non-Latin scripts
+	const words = str.match(/\p{L}+|\d+|\S/gu) || [];
+
+	const result = words
 		.map((word, index) => {
-			// If all are uppercase, keep uppercase
-			if (word === word.toUpperCase()) {
+			if (/^\p{Lu}+$/u.test(word)) {
+				// If all characters are uppercase, keep it uppercase
+				return word;
+			} else if (/^\p{Ll}+$/u.test(word) || /^\p{Lu}\p{Ll}+$/u.test(word)) {
+				// If it's all lowercase or starts with a capital letter, apply sentence case
+				return index === 0
+					? word.charAt(0).toLocaleUpperCase() + word.slice(1).toLocaleLowerCase()
+					: word.toLocaleLowerCase();
+			} else {
+				// For non-Latin scripts or mixed scripts, preserve the original case
 				return word;
 			}
-			// Lowercase all words, but uppercase the first letter of the first word in a sentence
-			return index === 0
-				? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-				: word.toLowerCase();
 		})
 		.join(' ')
-		// replace all double spaces with one space
 		.replace(/\s\s+/g, ' ')
 		.trim();
 
-	if (result === '' && str !== '') {
-		// console.log(
-		//   `Title is empty for ${str}. ${result} in standardizeToSentenceCaseSingleLine. Using Default Title.`
-		// );
-		return str;
-	}
-	return result;
+	return result || str;
 }

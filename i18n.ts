@@ -115,13 +115,14 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 			}
 			const parsedContent = JSON.parse(messageContent);
 			const translation = parsedContent.t;
-
-			console.log(`---\nTranslating key "${key}":\n${translation}\n---`);
 			let processedTranslation = translation;
-			if (ns === 'url') {
-				processedTranslation = slugifyText(processedTranslation);
-			}
+
 			processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
+
+			console.log(
+				`---\nTranslating key "${key}":\n${translation}\n${processedTranslation}\n---`
+			);
+
 			if (processedTranslation == '') {
 				console.error(`Translation is empty for key "${key}"`);
 			} else {
@@ -149,9 +150,6 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 			) {
 				processedTranslation = JSON.parse(followUp.choices[0].message.content).t;
 
-				if (ns === 'url') {
-					processedTranslation = slugifyText(processedTranslation);
-				}
 				processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
 
 				if (processedTranslation == '') {
@@ -201,7 +199,7 @@ function postTranslationProcessing(translation: string, key: string, ns: string)
 	try {
 		if (ns === 'url') {
 			// Working around some - issues with translation
-			return slugifyText(translation).toLocaleLowerCase().replace(/[:/?]/g, '');
+			return slugifyText(translation);
 		} else {
 			if (!key.includes('-') && key.includes(' ') && translation.includes('-')) {
 				return translation.replace(/-/g, ' ');
