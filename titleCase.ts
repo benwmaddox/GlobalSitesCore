@@ -22,21 +22,24 @@ export function titleCase(item: string) {
 }
 
 function standardizeToSentenceCaseSingleLine(str: string): string {
-	// This regex pattern finds words in various cases, including non-Latin scripts
-	const words = str.match(/\p{L}+|\d+|\S/gu) || [];
+	// This regex pattern finds words in various scripts, including hyphenated words
+	const words = str.match(/[\p{L}\p{M}]+(?:[-'][\p{L}\p{M}]+)*|\d+|\S+/gu) || [];
 
 	const result = words
 		.map((word, index) => {
-			if (/^\p{Lu}+$/u.test(word)) {
-				// If all characters are uppercase, keep it uppercase
+			if (/^[\p{Lu}\p{Lt}]+$/u.test(word)) {
+				// If all characters are uppercase or titlecase, keep it as is
 				return word;
-			} else if (/^\p{Ll}+$/u.test(word) || /^\p{Lu}\p{Ll}+$/u.test(word)) {
-				// If it's all lowercase or starts with a capital letter, apply sentence case
+			} else if (
+				/^[\p{Ll}\p{Lo}]+$/u.test(word) ||
+				/^[\p{Lu}\p{Lt}][\p{Ll}\p{Lo}]+$/u.test(word)
+			) {
+				// If it's all lowercase, uncased, or starts with an uppercase/titlecase letter, apply sentence case
 				return index === 0
 					? word.charAt(0).toLocaleUpperCase() + word.slice(1).toLocaleLowerCase()
 					: word.toLocaleLowerCase();
 			} else {
-				// For non-Latin scripts or mixed scripts, preserve the original case
+				// For mixed scripts or other cases, preserve the original word
 				return word;
 			}
 		})
