@@ -1,5 +1,8 @@
 export function titleCase(item: string) {
 	// Copied from root beer text's convert case page
+	if (item === null || item === undefined || item === '') {
+		console.trace(`Title is empty.`);
+	}
 	let l = standardizeToSentenceCaseSingleLine(item);
 	var title = l
 		.split(' ')

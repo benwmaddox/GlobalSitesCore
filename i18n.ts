@@ -201,6 +201,8 @@ function postTranslationProcessing(translation: string, key: string, ns: string)
 	if (key == undefined) {
 		console.trace();
 		throw new Error('Key is undefined');
+	} else if (key === '') {
+		console.trace(`Key is empty for post translation processing.`);
 	}
 	try {
 		if (ns === 'url') {
