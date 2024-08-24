@@ -28,7 +28,10 @@ const executeCommand = async (command: string): Promise<void> => {
 
 // Function to handle changes
 const handleChange = async (): Promise<void> => {
-	if (commandRunning) return;
+	if (commandRunning) {
+		changeDetected = true;
+		return;
+	}
 
 	if (changeDetected) {
 		commandRunning = true;
@@ -53,6 +56,5 @@ const watcher = chokidar.watch('src/**/*.*', {
 
 watcher.on('all', (event, path) => {
 	console.log(`File ${path} has been ${event}`);
-	changeDetected = true;
 	setTimeout(handleChange, 0);
 });

@@ -7,9 +7,16 @@ export function inlineTranslations() {
 		transform(code: string) {
 			// Simple regex to replace calls with translated strings
 			return {
-				code: code.replace(/\(.*translate\)\(['"`](.+?)['"`]\)/g, (_, key) => {
-					return JSON.stringify(i18next.t(key));
-				}),
+				code:
+					// Direct method call (translate('key'))
+					code
+						.replace(/translate\(['"`](.+?)['"`]\)/g, (_, key) => {
+							return JSON.stringify(i18next.t(key));
+						})
+						// bundled style method call ((0, translate)('key'))
+						.replace(/\(.*?translate\)\(['"`](.+?)['"`]\)/g, (_, key) => {
+							return JSON.stringify(i18next.t(key));
+						}),
 				map: null
 			};
 		}

@@ -48,8 +48,16 @@ export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 	if (options.baseUrl.endsWith('/')) {
 		console.error(`${crossMarkInRed} Base URL should not end with /`);
 	}
+	const files: FileResult[] = [];
 
-	const files = options.files.flat();
+	for (const file of options.files) {
+		if (typeof file === 'function') {
+			files.push(...(await file()));
+		} else {
+			files.push(...file);
+		}
+	}
+
 	if (options.validationOptions?.duplicateFilePaths !== false) {
 		checkForDuplicateFilePaths(files);
 	}

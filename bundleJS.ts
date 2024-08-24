@@ -16,7 +16,7 @@ export async function bundleJSFiles(
 ): Promise<FileResult[]> {
 	const pageFiles = glob.sync(globPattern, { withFileTypes: false });
 	const results: FileResult[] = [];
-	console.log(`${ellipsis} Processing ${pageFiles.length} JS files...\n\n`);
+	console.log(`${ellipsis} Bundling ${pageFiles.length} JS files...`);
 
 	for (const file of pageFiles) {
 		try {
