@@ -152,7 +152,7 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 				processedTranslation = postTranslationProcessing(processedTranslation, key, ns);
 
 				if (processedTranslation == '') {
-					console.error(`Translation followup is empty for key "${key}"`);
+					// Means the original was good.
 				} else {
 					existingTranslations[key] = processedTranslation;
 				}

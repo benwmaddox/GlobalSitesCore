@@ -15,3 +15,6 @@ export function inlineTranslations() {
 		}
 	};
 }
+export function inlineTranslationsCode(code: string): string {
+	return inlineTranslations().transform(code).code;
+}
