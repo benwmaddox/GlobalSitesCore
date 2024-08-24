@@ -14,7 +14,7 @@ export function inlineTranslations() {
 							return JSON.stringify(i18next.t(key));
 						})
 						// bundled style method call ((0, translate)('key'))
-						.replace(/\(.*?translate\)\(['"`](.+?)['"`]\)/g, (_, key) => {
+						.replace(/\([\w\d,\s_.]*?translate\)\(['"`](.+?)['"`]\)/g, (_, key) => {
 							return JSON.stringify(i18next.t(key));
 						}),
 				map: null
