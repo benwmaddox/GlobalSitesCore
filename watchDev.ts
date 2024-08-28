@@ -1,8 +1,5 @@
 import chokidar from 'chokidar';
 import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execPromise = promisify(exec);
 
 let changeDetected = false;
 let commandRunning = false;
@@ -53,6 +50,9 @@ const handleChange = async (): Promise<void> => {
 		console.log(`Waiting on new changes.`);
 
 		commandRunning = false;
+	}
+	if (changeDetected) {
+		setTimeout(handleChange, 0);
 	}
 };
 
