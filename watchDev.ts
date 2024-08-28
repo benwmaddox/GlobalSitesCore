@@ -9,6 +9,7 @@ let commandRunning = false;
 
 // Function to execute a command
 const executeCommand = async (command: string): Promise<void> => {
+	const commandStartTime = new Date().getTime();
 	try {
 		const childProcess = exec(command);
 
@@ -32,6 +33,8 @@ const executeCommand = async (command: string): Promise<void> => {
 	} catch (error) {
 		console.error('Error executing command:', error);
 	}
+	const commandEndTime = new Date().getTime();
+	console.log(`TypeScript + Build took ${commandEndTime - commandStartTime}ms total.`);
 };
 
 // Function to handle changes
@@ -58,7 +61,7 @@ const watcher = chokidar.watch('src/**/*.*', {
 	ignored: /node_modules/,
 	persistent: true,
 	ignoreInitial: true,
-	usePolling: true,
+	//usePolling: true,
 	interval: 100,
 	binaryInterval: 300
 });
