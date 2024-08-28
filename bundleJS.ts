@@ -30,7 +30,13 @@ export async function bundleJSFiles(
 						preferBuiltins: true
 					}),
 					commonjs()
-				]
+				],
+				onwarn: (warning, warn) => {
+					if (warning.code === 'THIS_IS_UNDEFINED') {
+						return;
+					}
+					warn(warning);
+				}
 			});
 
 			const { output } = await bundle.generate({
