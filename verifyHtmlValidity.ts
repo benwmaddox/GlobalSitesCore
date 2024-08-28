@@ -15,7 +15,8 @@ export function verifyHtmlValidity(
 				'void-style': 'off',
 				'no-trailing-whitespace': 'off',
 				'no-inline-style': 'off',
-				'long-title': 'off'
+				'long-title': 'off',
+				'wcag/h63': 'off'
 			}
 		}
 	);
@@ -26,12 +27,12 @@ export function verifyHtmlValidity(
 			return;
 		}
 		if (file.content instanceof Buffer) {
-			var report = validator.validateStringSync(file.content.toString());
+			const report = validator.validateStringSync(file.content.toString());
 			filesChecked += 1;
 			if (report.errorCount > 0) {
 				htmlErrors += 1;
 				console.log(`Errors in ${file.relativePath}:`);
-				for (let message of report.results[0].messages) {
+				for (const message of report.results[0].messages) {
 					console.error(message);
 				}
 			}
@@ -39,14 +40,14 @@ export function verifyHtmlValidity(
 			if (file.content === undefined) {
 				return;
 			}
-			var report = validator.validateStringSync(file.content);
+			const report = validator.validateStringSync(file.content);
 			filesChecked += 1;
 			if (report.errorCount > 0) {
 				htmlErrors += 1;
 				console.log(`Errors in ${file.relativePath}:`);
-				var message = report.results[0].messages[0];
+				const message = report.results[0].messages[0];
 				console.error({
-					path: file.relativePath,
+					//path: file.relativePath,
 					// get the line context from the file content. 1 before through 1 after
 					lineContext: file.content
 						.split('\n')

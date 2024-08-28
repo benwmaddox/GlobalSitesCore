@@ -43,16 +43,18 @@ const handleChange = async (): Promise<void> => {
 	}
 
 	if (changeDetected) {
+		console.clear();
 		commandRunning = true;
 		changeDetected = false;
 
 		await executeCommand('npm run dev');
-		console.log(`Waiting on new changes.`);
 
 		commandRunning = false;
-	}
-	if (changeDetected) {
-		setTimeout(handleChange, 0);
+		if (changeDetected) {
+			setTimeout(handleChange, 0);
+		} else {
+			console.log(`Waiting on new changes.`);
+		}
 	}
 };
 
