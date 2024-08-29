@@ -168,8 +168,8 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 
 		processedCount++; // Increment the counter
 
-		// Save translations every 25 keys
-		if (processedCount % 25 === 0) {
+		// Save translations every x keys
+		if (processedCount % 10 === 0) {
 			fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
 			// Sort the keys
