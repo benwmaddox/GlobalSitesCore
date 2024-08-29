@@ -43,7 +43,7 @@ const handleChange = async (): Promise<void> => {
 	}
 
 	if (changeDetected) {
-		//console.clear();
+		console.clear();
 		commandRunning = true;
 		changeDetected = false;
 
