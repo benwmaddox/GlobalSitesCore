@@ -10,7 +10,7 @@ import { inlineTranslationsCode } from './inlineTranslations';
 import { languageSettings } from './languages';
 import i18next from './i18n';
 
-export async function bundleJSFiles(
+export async function BundleJSFiles(
 	globPattern: string,
 	shouldMinify: boolean
 ): Promise<FileResult[]> {

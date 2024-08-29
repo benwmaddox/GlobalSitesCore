@@ -1,8 +1,5 @@
 import chokidar from 'chokidar';
 import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execPromise = promisify(exec);
 
 let changeDetected = false;
 let commandRunning = false;
@@ -46,13 +43,18 @@ const handleChange = async (): Promise<void> => {
 	}
 
 	if (changeDetected) {
+		console.clear();
 		commandRunning = true;
 		changeDetected = false;
 
 		await executeCommand('npm run dev');
-		console.log(`Waiting on new changes.`);
 
 		commandRunning = false;
+		if (changeDetected) {
+			setTimeout(handleChange, 0);
+		} else {
+			console.log(`Waiting on new changes.`);
+		}
 	}
 };
 
@@ -67,7 +69,12 @@ const watcher = chokidar.watch('src/**/*.*', {
 });
 
 watcher.on('all', (event, path) => {
+	if (path.includes('.tsbuildinfo')) {
+		return;
+	}
+
 	console.log(`File ${path} has been ${event}`);
+
 	changeDetected = true;
 	setTimeout(handleChange, 0);
 });
