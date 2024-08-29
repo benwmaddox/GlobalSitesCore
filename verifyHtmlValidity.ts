@@ -8,7 +8,7 @@ export function verifyHtmlValidity(
 	throwErrors?: boolean
 ) {
 	console.log(`${ellipsis} Verifying HTML is valid`);
-	var validator = new HtmlValidate(
+	const validator = new HtmlValidate(
 		options || {
 			extends: ['html-validate:recommended'],
 			rules: {
@@ -20,8 +20,8 @@ export function verifyHtmlValidity(
 			}
 		}
 	);
-	var htmlErrors = 0;
-	var filesChecked = 0;
+	let htmlErrors = 0;
+	let filesChecked = 0;
 	files.forEach((file) => {
 		if (htmlErrors > 100) {
 			return;

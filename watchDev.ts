@@ -43,7 +43,7 @@ const handleChange = async (): Promise<void> => {
 	}
 
 	if (changeDetected) {
-		console.clear();
+		//console.clear();
 		commandRunning = true;
 		changeDetected = false;
 
@@ -69,7 +69,12 @@ const watcher = chokidar.watch('src/**/*.*', {
 });
 
 watcher.on('all', (event, path) => {
+	if (path.includes('.tsbuildinfo')) {
+		return;
+	}
+
 	console.log(`File ${path} has been ${event}`);
+
 	changeDetected = true;
 	setTimeout(handleChange, 0);
 });

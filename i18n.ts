@@ -131,7 +131,7 @@ export async function bulkTranslateOpenAI(lng: string, ns: string, keys: string[
 				messages: [
 					{
 						role: 'system',
-						content: `You are to verify whether the a translation is reasonable. This is from English to ${lng}. If the translation is fine, return an empty translation. If it needs to be corrected, provide the updated translation. Do not include any extra desciption. Just the translation. If no translation is possible, leave it blank.`
+						content: `You are to verify whether the a translation is reasonable. This is from English to ${lng}. If the translation is fine, return an empty translation. If it needs to be corrected, provide the updated translation. Do not include any extra desciption. Just the translation. If no translation is possible, leave it blank. If the translation includes html tags, make sure they close properly.`
 					},
 					{
 						role: 'user',
