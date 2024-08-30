@@ -1,14 +1,14 @@
 import fs from 'fs';
 import { FileResult } from './FileResult';
 export function SiteMap(
-	otherFiles: FileResult[],
+	inputFiles: FileResult[],
 	baseUrlWithoutTrailingSlash: string
 ): FileResult[] {
 	var files: FileResult[] = [];
 
 	var sitemap = `<?xml version="1.0" encoding="UTF-8"?>
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-    ${otherFiles
+    ${inputFiles
 
 		.filter((f) => f.includeInSitemap)
 		.map(
@@ -31,25 +31,6 @@ export function SiteMap(
 				}</url>`
 		)
 		.join('\r\n')}
-      ${
-			// Load from disk if html file is not in otherFiles. This allows older files to still work from prior to purchase of the domain
-			fs
-				.readdirSync('dest')
-				.filter(
-					(f) =>
-						f.endsWith('.html') &&
-						standardizePathForSitemap(f) !== '/' &&
-						standardizePathForSitemap(f) !== '/404'
-				)
-				.map((f) => {
-					if (!otherFiles.find((of) => of.relativePath === f)) {
-						return `<url><loc>${baseUrlWithoutTrailingSlash}${standardizePathForSitemap(
-							f
-						)}</loc></url>`;
-					}
-				})
-				.join('\r\n')
-		}
   </urlset>`;
 
 	files.push({
