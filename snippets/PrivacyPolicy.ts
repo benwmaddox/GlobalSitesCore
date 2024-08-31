@@ -16,10 +16,11 @@ export function GeneralPrivacyPolicy(props: RenderProps, options: PrivacyPolicyO
 	const title = i18next.t(`Privacy Policy`);
 	//var iOrUs = options.individualOrBusiness === "individual" ? "I" : "us";
 	const myOrOur = options.individualOrBusiness === 'individual' ? 'my' : 'our';
+	const myOrOurCapital = options.individualOrBusiness === 'individual' ? 'My' : 'Our';
 	const iOrWe = options.individualOrBusiness === 'individual' ? 'I' : 'we';
 	const meOrUs = options.individualOrBusiness === 'individual' ? 'me' : 'us';
 	const metaDescription = i18next.t(
-		`${myOrOur} privacy policy explains how ${iOrWe} collect, use, and protect your personal information.`
+		`${myOrOurCapital} privacy policy explains how ${iOrWe} collect, use, and protect your personal information.`
 	);
 
 	return /* HTML */ `
