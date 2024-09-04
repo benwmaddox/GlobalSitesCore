@@ -4,6 +4,7 @@ import { FileResult } from './FileResult';
 
 export const languageSettings = {
 	languages: [
+		'en',
 		'ar',
 		'bn',
 		'de',
@@ -24,8 +25,7 @@ export const languageSettings = {
 		'th',
 		'tr',
 		'vi',
-		'zh',
-		'en'
+		'zh'
 	],
 	defaultLanguage: 'en'
 };
@@ -51,6 +51,7 @@ export interface RenderLanguageFileOptions {
 export async function renderLanguageFiles(
 	options: RenderLanguageFileOptions
 ): Promise<FileResult[]> {
+	// TODO: open graph image support
 	const fileResults: FileResult[] = [];
 	const languageOptions = await getLanguageOptions(
 		options.subDirectoryInEnglish,
@@ -110,14 +111,14 @@ export async function getLanguageOptions(
 	fileNameWithoutNumberInEnglish: string | undefined,
 	i: number | undefined
 ): Promise<LanguageOption[]> {
-	var languageOptions: LanguageOption[] = [];
-	for (let language of languageSettings.languages) {
+	const languageOptions: LanguageOption[] = [];
+	for (const language of languageSettings.languages) {
 		await i18next.changeLanguage(language);
 
-		var fileNameWithoutNumber = fileNameWithoutNumberInEnglish
+		const fileNameWithoutNumber = fileNameWithoutNumberInEnglish
 			? i18next.t(fileNameWithoutNumberInEnglish, { ns: 'url' })
 			: undefined;
-		var url =
+		const url =
 			(language === languageSettings.defaultLanguage ? '/' : `/${language}/`) +
 			(subDirectoryInEnglish ? i18next.t(subDirectoryInEnglish, { ns: 'url' }) + '/' : '') +
 			(fileNameWithoutNumber
@@ -138,7 +139,7 @@ export async function getLanguageOptions(
 export async function verifyLanguageIntegrity() {
 	const languages = Object.keys(i18next.store.data);
 
-	for (let language of languages) {
+	for (const language of languages) {
 		await i18next.changeLanguage(language);
 
 		// Retrieve all namespaces, as translations might be split into multiple namespaces
@@ -146,12 +147,12 @@ export async function verifyLanguageIntegrity() {
 
 		console.log(`Checking language ${language}...`);
 
-		var errorCount = 0;
-		for (let namespace of namespaces) {
+		let errorCount = 0;
+		for (const namespace of namespaces) {
 			const translations = i18next.store.data[language][namespace];
 
 			const checkTranslations = (obj: any, prefix = '') => {
-				for (let key in obj) {
+				for (const key in obj) {
 					const fullKey = prefix ? `${prefix}.${key}` : key;
 					const value = obj[key];
 
