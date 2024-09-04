@@ -15,7 +15,7 @@ import { checkMarkInGreen, crossMarkInRed, ellipsis } from './ConsoleText';
 import { RobotsTXTPages } from './RobotsTXT';
 import { FileResult } from './FileResult';
 
-const hashFilePath = './hashFile.json';
+const hashFilePath = './.GlobalSitesCore/hashFile.json';
 
 // Function to compute hash of the content
 function computeHash(content: string) {
@@ -35,6 +35,8 @@ async function loadHashes() {
 
 // Function to save hashes
 async function saveHashes(hashes: Record<string, string>) {
+	await fs.ensureDir('./.GlobalSitesCore');
+
 	await fs.writeFile(hashFilePath, JSON.stringify(hashes, null, 2), 'utf-8');
 }
 export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
