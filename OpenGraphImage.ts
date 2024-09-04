@@ -1,4 +1,5 @@
 import { FileResult } from './FileResult';
+import { promises as fs } from 'fs'; // Import fs for file operations
 
 const standardWidth = 1200;
 const standardHeight = 630;
@@ -25,7 +26,7 @@ export async function GenerateOpenGraphImage(
 	const cacheKey = generateCacheKey(template, data);
 
 	// Check if image is already cached
-	const cachedImage = checkCache(cacheKey);
+	const cachedImage = await checkCache(cacheKey);
 	if (cachedImage) {
 		return { image: cachedImage, cacheKey };
 	}
@@ -46,11 +47,16 @@ function generateCacheKey(template: string, data: Record<string, string>): strin
 	return Buffer.from(content).toString('base64');
 }
 
-function checkCache(cacheKey: string): Buffer | null {
+async function checkCache(cacheKey: string): Promise<Buffer | null> {
 	// Implement cache checking logic
-	// Return the cached image if found, otherwise return null
-	// This is a placeholder implementation
-	return null;
+	const cacheFilePath = './GlobalSitesCore/openGraphImage.json';
+	try {
+		const data = await fs.readFile(cacheFilePath, 'utf-8');
+		const cache = JSON.parse(data);
+		return cache[cacheKey] ? Buffer.from(cache[cacheKey], 'base64') : null; // Return cached image if found
+	} catch (error) {
+		return null; // Return null if file read fails
+	}
 }
 
 async function generateImage(template: string, data: Record<string, string>): Promise<Buffer> {
@@ -107,8 +113,20 @@ async function generateImage(template: string, data: Record<string, string>): Pr
 	return Buffer.from('');
 }
 
-function cacheImage(cacheKey: string, image: Buffer): void {
+async function cacheImage(cacheKey: string, image: Buffer): Promise<void> {
 	// Implement caching logic
+	const cacheFilePath = './.GlobalSitesCore/openGraphImage.json';
+	let cache: Record<string, string> = {};
+
+	// Read existing cache if it exists
+	try {
+		const data = await fs.readFile(cacheFilePath, 'utf-8');
+		cache = JSON.parse(data);
+	} catch (error) {
+		// File may not exist, initialize cache as empty
+	}
+
 	// Store the image in the cache using the cacheKey
-	// This is a placeholder implementation
+	cache[cacheKey] = image.toString('base64'); // Store image as base64 string
+	await fs.writeFile(cacheFilePath, JSON.stringify(cache)); // Write updated cache to file
 }
