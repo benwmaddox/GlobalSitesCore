@@ -10,7 +10,7 @@ import { inlineTranslationsCode } from './inlineTranslations';
 import { languageSettings } from './languages';
 import i18next from './i18n';
 
-export async function bundleJSFiles(
+export async function BundleJSFiles(
 	globPattern: string,
 	shouldMinify: boolean
 ): Promise<FileResult[]> {
@@ -30,7 +30,13 @@ export async function bundleJSFiles(
 						preferBuiltins: true
 					}),
 					commonjs()
-				]
+				],
+				onwarn: (warning, warn) => {
+					if (warning.code === 'THIS_IS_UNDEFINED') {
+						return;
+					}
+					warn(warning);
+				}
 			});
 
 			const { output } = await bundle.generate({

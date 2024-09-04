@@ -8,30 +8,31 @@ export function verifyHtmlValidity(
 	throwErrors?: boolean
 ) {
 	console.log(`${ellipsis} Verifying HTML is valid`);
-	var validator = new HtmlValidate(
+	const validator = new HtmlValidate(
 		options || {
 			extends: ['html-validate:recommended'],
 			rules: {
 				'void-style': 'off',
 				'no-trailing-whitespace': 'off',
 				'no-inline-style': 'off',
-				'long-title': 'off'
+				'long-title': 'off',
+				'wcag/h63': 'off'
 			}
 		}
 	);
-	var htmlErrors = 0;
-	var filesChecked = 0;
+	let htmlErrors = 0;
+	let filesChecked = 0;
 	files.forEach((file) => {
 		if (htmlErrors > 100) {
 			return;
 		}
 		if (file.content instanceof Buffer) {
-			var report = validator.validateStringSync(file.content.toString());
+			const report = validator.validateStringSync(file.content.toString());
 			filesChecked += 1;
 			if (report.errorCount > 0) {
 				htmlErrors += 1;
-				console.log(`Errors in ${file.relativePath}:`);
-				for (let message of report.results[0].messages) {
+				console.log(`${report.errorCount} errors in ${file.relativePath}:`);
+				for (const message of report.results[0].messages) {
 					console.error(message);
 				}
 			}
@@ -39,24 +40,24 @@ export function verifyHtmlValidity(
 			if (file.content === undefined) {
 				return;
 			}
-			var report = validator.validateStringSync(file.content);
+			const report = validator.validateStringSync(file.content);
 			filesChecked += 1;
 			if (report.errorCount > 0) {
 				htmlErrors += 1;
-				console.log(`Errors in ${file.relativePath}:`);
-				var message = report.results[0].messages[0];
-				console.error({
-					path: file.relativePath,
-					// get the line context from the file content. 1 before through 1 after
-					lineContext: file.content
-						.split('\n')
-						.slice(message.line - 1 - 1, message.line + 2)
-						.join('\n'),
-					ruleId: message.ruleId,
-					message: message.message,
-					ruleUrl: message.ruleUrl
-				});
-
+				console.log(`${report.errorCount} errors in ${file.relativePath}:`);
+				for (const message of report.results[0].messages) {
+					console.error({
+						//path: file.relativePath,
+						// get the line context from the file content. 1 before through 1 after
+						lineContext: file.content
+							.split('\n')
+							.slice(message.line - 1 - 1, message.line + 2)
+							.join('\n'),
+						ruleId: message.ruleId,
+						message: message.message,
+						ruleUrl: message.ruleUrl
+					});
+				}
 				if (throwErrors === true) {
 					throw new Error('HTML validation errors found');
 				}

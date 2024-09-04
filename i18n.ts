@@ -147,7 +147,7 @@ export async function bulkTranslateOpenAI(
         messages: [
           {
             role: "system",
-            content: `You are to verify whether the a translation is reasonable. This is from English to ${lng}. If the translation is fine, return an empty translation. If it needs to be corrected, provide the updated translation. Do not include any extra desciption. Just the translation. If no translation is possible, leave it blank.`,
+            content: `You are to verify whether the a translation is reasonable. This is from English to ${lng}. If the translation is fine, return an empty translation. If it needs to be corrected, provide the updated translation. Do not include any extra desciption. Just the translation. If no translation is possible, leave it blank. If the translation includes html tags, make sure they close properly.`,
           },
           {
             role: "user",
@@ -190,8 +190,8 @@ export async function bulkTranslateOpenAI(
 
     processedCount++; // Increment the counter
 
-    // Save translations every 25 keys
-    if (processedCount % 25 === 0) {
+    // Save translations every x keys
+    if (processedCount % 10 === 0) {
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
       // Sort the keys

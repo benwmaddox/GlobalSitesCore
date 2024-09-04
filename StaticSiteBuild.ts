@@ -35,7 +35,7 @@ async function loadHashes() {
 
 // Function to save hashes
 async function saveHashes(hashes: Record<string, string>) {
-	await fs.writeFile(hashFilePath, JSON.stringify(hashes, null, 2), 'utf8');
+	await fs.writeFile(hashFilePath, JSON.stringify(hashes, null, 2), 'utf-8');
 }
 export async function StaticSiteBuild(options: StaticSiteBuildOptions) {
 	const maxConcurrentWrites = 50;
