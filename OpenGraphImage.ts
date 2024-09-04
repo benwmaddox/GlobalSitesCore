@@ -1,20 +1,30 @@
 import { FileResult } from './FileResult';
-import { promises as fs } from 'fs'; // Import fs for file operations
+import { promises as fs } from 'fs';
+import { createHash } from 'crypto';
+import path from 'path';
 
 const standardWidth = 1200;
 const standardHeight = 630;
-export async function GetGeneratedImageFile(): Promise<FileResult> {
-	const openGraphImage = await GenerateOpenGraphImage('<div>{{data}}</div>', { data: 'data V2' });
+
+// in progress. Not ready for production
+async function GetGeneratedImageFile(
+	htmlTemplate: string,
+	data: Record<string, string>,
+	relativePath: string
+): Promise<FileResult> {
+	const imageResult = await GenerateOpenGraphImage(htmlTemplate, data, relativePath);
 	const result: FileResult = {
-		relativePath: 'openGraphImage.png',
-		content: openGraphImage.image,
+		relativePath,
+		content: imageResult.image,
 		includeInSitemap: false
 	};
 	return result;
 }
-export async function GenerateOpenGraphImage(
+
+async function GenerateOpenGraphImage(
 	template: string,
-	data: Record<string, string>
+	data: Record<string, string>,
+	relativePath: string
 ): Promise<{
 	// include caching based on template & data
 
@@ -26,8 +36,9 @@ export async function GenerateOpenGraphImage(
 	const cacheKey = generateCacheKey(template, data);
 
 	// Check if image is already cached
-	const cachedImage = await checkCache(cacheKey);
-	if (cachedImage) {
+	const cacheFilePath = path.join('.GlobalSitesCore/OGI/', relativePath);
+	if (await checkCache(cacheKey, cacheFilePath)) {
+		const cachedImage = await fs.readFile(cacheFilePath);
 		return { image: cachedImage, cacheKey };
 	}
 
@@ -35,7 +46,9 @@ export async function GenerateOpenGraphImage(
 	const image = await generateImage(template, data);
 
 	// Cache the generated image
-	cacheImage(cacheKey, image);
+	await cacheImage(cacheKey, cacheFilePath);
+	await fs.mkdir(path.dirname(cacheFilePath), { recursive: true });
+	await fs.writeFile(cacheFilePath, image);
 
 	return { image, cacheKey };
 }
@@ -44,18 +57,24 @@ function generateCacheKey(template: string, data: Record<string, string>): strin
 	// Implement a hashing function to create a unique key
 	// This is a simple example, consider using a more robust hashing algorithm
 	const content = template + JSON.stringify(data);
-	return Buffer.from(content).toString('base64');
+	return createHash('sha256').update(content).digest('hex');
 }
 
-async function checkCache(cacheKey: string): Promise<Buffer | null> {
+async function checkCache(cacheKey: string, cacheFilePath: string): Promise<boolean> {
 	// Implement cache checking logic
-	const cacheFilePath = './GlobalSitesCore/openGraphImage.json';
+	const cacheMapPath = '.GlobalSitesCore/openGraphImageCache.json';
 	try {
-		const data = await fs.readFile(cacheFilePath, 'utf-8');
-		const cache = JSON.parse(data);
-		return cache[cacheKey] ? Buffer.from(cache[cacheKey], 'base64') : null; // Return cached image if found
+		const cacheMapData = await fs.readFile(cacheMapPath, 'utf-8');
+		const cacheMap = JSON.parse(cacheMapData);
+		return (
+			cacheMap[cacheFilePath] === cacheKey &&
+			(await fs
+				.access(cacheFilePath)
+				.then(() => true)
+				.catch(() => false))
+		);
 	} catch (error) {
-		return null; // Return null if file read fails
+		return false;
 	}
 }
 
@@ -110,23 +129,22 @@ async function generateImage(template: string, data: Record<string, string>): Pr
 		}
 		return compiledTemplate;
 	}
-	return Buffer.from('');
 }
 
-async function cacheImage(cacheKey: string, image: Buffer): Promise<void> {
+async function cacheImage(templateAndDataKey: string, cacheFilePath: string): Promise<void> {
 	// Implement caching logic
-	const cacheFilePath = './.GlobalSitesCore/openGraphImage.json';
-	let cache: Record<string, string> = {};
+	const cacheMapPath = '.GlobalSitesCore/openGraphImageCache.json';
+	let cacheMap: Record<string, string> = {};
 
 	// Read existing cache if it exists
 	try {
-		const data = await fs.readFile(cacheFilePath, 'utf-8');
-		cache = JSON.parse(data);
+		const data = await fs.readFile(cacheMapPath, 'utf-8');
+		cacheMap = JSON.parse(data);
 	} catch (error) {
-		// File may not exist, initialize cache as empty
+		// File may not exist, initialize cacheMap as empty
 	}
 
-	// Store the image in the cache using the cacheKey
-	cache[cacheKey] = image.toString('base64'); // Store image as base64 string
-	await fs.writeFile(cacheFilePath, JSON.stringify(cache)); // Write updated cache to file
+	// Store the hash in the cache using the cacheKey
+	cacheMap[cacheFilePath] = templateAndDataKey;
+	await fs.writeFile(cacheMapPath, JSON.stringify(cacheMap));
 }
