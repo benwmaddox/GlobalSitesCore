@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import { LanguageOption } from '../LanguageOption';
 import { languageSettings } from '../languages';
 
@@ -29,8 +30,7 @@ export function languageOptionDropDown(languageOptions: LanguageOption[], lang: 
 	return /*HTML*/ `
   <script>
     function switchLanguage() {
-      var selectedLanguageUrl =
-        document.getElementById("language-select").value;
+      var selectedLanguageUrl = document.getElementById("language-select").value;
       window.location.href = selectedLanguageUrl;
     }
   </script>
@@ -46,4 +46,50 @@ export function languageOptionDropDown(languageOptions: LanguageOption[], lang: 
 			.join('\n')}
     </select>
   </div>`;
+}
+
+export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang: string): string {
+	return /*HTML*/ `
+	<script>		
+		function autoDetectLanguage() {
+			try{
+				const userLang = navigator.language || navigator.userLanguage;
+				const detectedLang = userLang.split('-')[0];
+				const languageSelect = document.getElementById("language-select");
+				const defaultLang = languageSelect.options[languageSelect.selectedIndex].value;
+				var matchingLink = [...languageSelect.options].find(option => option.hreflang.includes(detectedLang)).href;	
+			}catch(e){
+				console.log(e);
+			}
+		}
+
+		window.addEventListener('DOMContentLoaded', autoDetectLanguage); 	
+	</script>
+	
+	
+	${[...languageOptions]
+		.sort((a, b) => (a.code == lang ? 1 : a.code.localeCompare(b.code)))
+		.map((option) => {
+			return /*html*/ `<span class="language-suggestion" id="language-suggestion-${
+				option.code
+			}" class="warning" style="display:inline-block;">
+		<p>${i18next.t(
+			`Looks like we have another page in ${option.name}. Would you like to change languages?`
+		)}</p>
+		<p>
+		${i18next.t(
+			`Looks like we have another page in ${option.name}. Would you like to change languages?`,
+			{
+				lng: option.code
+			}
+		)}<br /></p>
+		<button onclick="window.location.href = matchingLink;">${i18next.t(`Yes`)}</button>
+		<button onclick="document.getElementById('language-suggestion').style.display = 'none';">${i18next.t(
+			`No`
+		)}</button>
+	</span>`;
+		})
+		.join('\n')}
+		
+	`;
 }
