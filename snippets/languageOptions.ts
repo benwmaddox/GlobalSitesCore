@@ -63,6 +63,10 @@ export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang
 			}
 		}
 
+		function hideLanguageSuggestion(code) {
+			document.getElementById('language-suggestion-' + code).style.display = 'none';
+			return false;
+		}
 		window.addEventListener('DOMContentLoaded', autoDetectLanguage); 	
 	</script>
 	
@@ -83,20 +87,20 @@ export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang
 				lng: option.code
 			}
 		)}<br /></p>
-		<button onclick="window.location.href = matchingLink;">${
-			i18next.t(`Yes`) +
-			' / ' +
-			i18next.t(`Yes`, {
-				lng: option.code
-			})
-		}</button>
-		<button onclick="document.getElementById('language-suggestion').style.display = 'none';">${
-			i18next.t(`No`) +
-			' / ' +
-			i18next.t(`No`, {
-				lng: option.code
-			})
-		}</button>
+		<a class="button" href="${option.url}">${
+				i18next.t(`Yes`) +
+				' / ' +
+				i18next.t(`Yes`, {
+					lng: option.code
+				})
+			}</a>
+		<button type="button" onclick="hideLanguageSuggestion('${option.code}');">${
+				i18next.t(`No`) +
+				' / ' +
+				i18next.t(`No`, {
+					lng: option.code
+				})
+			}</button>
 	</span>`;
 		})
 		.join('\n')}
