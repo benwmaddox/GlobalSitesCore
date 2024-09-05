@@ -83,10 +83,20 @@ export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang
 				lng: option.code
 			}
 		)}<br /></p>
-		<button onclick="window.location.href = matchingLink;">${i18next.t(`Yes`)}</button>
-		<button onclick="document.getElementById('language-suggestion').style.display = 'none';">${i18next.t(
-			`No`
-		)}</button>
+		<button onclick="window.location.href = matchingLink;">${
+			i18next.t(`Yes`) +
+			' / ' +
+			i18next.t(`Yes`, {
+				lng: option.code
+			})
+		}</button>
+		<button onclick="document.getElementById('language-suggestion').style.display = 'none';">${
+			i18next.t(`No`) +
+			' / ' +
+			i18next.t(`No`, {
+				lng: option.code
+			})
+		}</button>
 	</span>`;
 		})
 		.join('\n')}
