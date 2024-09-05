@@ -76,32 +76,26 @@ export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang
 		.map((option) => {
 			return /*html*/ `<span class="language-suggestion" id="language-suggestion-${
 				option.code
-			}" class="warning" style="display:inline-block;">
-		<p>${i18next.t(
-			`Looks like we have another page in ${option.name}. Would you like to change languages?`
-		)}</p>
-		<p>
-		${i18next.t(
-			`Looks like we have another page in ${option.name}. Would you like to change languages?`,
-			{
-				lng: option.code
-			}
-		)}<br /></p>
-		<a class="button" href="${option.url}">${
+			}" class="warning" style="display:inline-block;"><p>${i18next.t(
+				`Looks like we have another page in ${option.name}. Would you like to change languages?`
+			)}</p><p>${i18next.t(
+				`Looks like we have another page in ${option.name}. Would you like to change languages?`,
+				{
+					lng: option.code
+				}
+			)}<br /></p><a class="button" href="${option.url}">${
 				i18next.t(`Yes`) +
 				' / ' +
 				i18next.t(`Yes`, {
 					lng: option.code
 				})
-			}</a>
-		<button type="button" onclick="hideLanguageSuggestion('${option.code}');">${
+			}</a><button type="button" onclick="hideLanguageSuggestion('${option.code}');">${
 				i18next.t(`No`) +
 				' / ' +
 				i18next.t(`No`, {
 					lng: option.code
 				})
-			}</button>
-	</span>`;
+			}</button></span>`;
 		})
 		.join('\n')}
 		
