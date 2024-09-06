@@ -55,7 +55,7 @@ export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang
 		.sort((a, b) => (a.code == lang ? 1 : a.code.localeCompare(b.code)))
 		.filter((option) => option.code !== lang)
 		.map((option) => {
-			return /*html*/ `<span class="language-suggestion warning hidden" id="language-suggestion-${
+			return /*html*/ `<div class="language-suggestion warning hidden" id="language-suggestion-${
 				option.code
 			}" ><p>${i18next.t(
 				`We have another page in ${option.name}. Would you like to change languages?`
@@ -76,7 +76,7 @@ export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang
 				i18next.t(`No`, {
 					lng: option.code
 				})
-			}</a></p></span>`;
+			}</a></p></div>`;
 		})
 		.join('\n')}
 		
