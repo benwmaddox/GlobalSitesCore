@@ -50,54 +50,65 @@ export function languageOptionDropDown(languageOptions: LanguageOption[], lang: 
 
 export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang: string): string {
 	return /*HTML*/ `
-	<script>		
-		function autoDetectLanguage() {
-			try{
-				const userLang = navigator.language || navigator.userLanguage;
-				const detectedLang = userLang.split('-')[0];
-				const languageSelect = document.getElementById("language-select");
-				const defaultLang = languageSelect.options[languageSelect.selectedIndex].value;
-				var matchingLink = [...languageSelect.options].find(option => option.hreflang.includes(detectedLang)).href;	
-			}catch(e){
-				console.log(e);
-			}
-		}
-
-		function hideLanguageSuggestion(code) {
-			document.getElementById('language-suggestion-' + code).style.display = 'none';
-			return false;
-		}
-		window.addEventListener('DOMContentLoaded', autoDetectLanguage); 	
-	</script>
-	
 	
 	${[...languageOptions]
 		.sort((a, b) => (a.code == lang ? 1 : a.code.localeCompare(b.code)))
+		.filter((option) => option.code !== lang)
 		.map((option) => {
-			return /*html*/ `<span class="language-suggestion" id="language-suggestion-${
+			return /*html*/ `<span class="language-suggestion warning hidden" id="language-suggestion-${
 				option.code
-			}" class="warning" style="display:inline-block;"><p>${i18next.t(
-				`Looks like we have another page in ${option.name}. Would you like to change languages?`
+			}" ><p>${i18next.t(
+				`We have another page in ${option.name}. Would you like to change languages?`
 			)}</p><p>${i18next.t(
-				`Looks like we have another page in ${option.name}. Would you like to change languages?`,
+				`We have another page in ${option.name}. Would you like to change languages?`,
 				{
 					lng: option.code
 				}
-			)}<br /></p><a class="button" href="${option.url}">${
+			)}<br /></p><p><a class="button" href="${option.url}">${
 				i18next.t(`Yes`) +
 				' / ' +
 				i18next.t(`Yes`, {
 					lng: option.code
 				})
-			}</a><button type="button" onclick="hideLanguageSuggestion('${option.code}');">${
+			}</a> <a class="button" href="#" onclick="hideLanguageSuggestion('${option.code}');">${
 				i18next.t(`No`) +
 				' / ' +
 				i18next.t(`No`, {
 					lng: option.code
 				})
-			}</button></span>`;
+			}</a></p></span>`;
 		})
 		.join('\n')}
 		
+	<script>		
+		function autoDetectLanguage() {
+			try {
+				const userLang = navigator.language || navigator.userLanguage;
+				var languageSuggestionElement = document.getElementById('language-suggestion-' + userLang) ||  document.getElementById('language-suggestion-' + userLang.split('-')[0])
+
+				if (languageSuggestionElement) {
+					const skipDate = localStorage.getItem('language-suggestion-skipped-'+userLang) || localStorage.getItem('language-suggestion-skipped-'+userLang.split('-')[0]);
+					// if the user has not skipped the suggestion in the last 7 days, show the suggestion
+					if (!skipDate || Date.now() > new Date(skipDate).getTime() + 7 * 24 * 60 * 60 * 1000) {
+						languageSuggestionElement.classList.remove('hidden');
+					}
+				}
+			} catch(e){
+				console.log(e);
+			}
+		}
+
+		function hideLanguageSuggestion(code) {		
+
+			// add class hidden to the element
+			document.getElementById('language-suggestion-' + code).classList.add('hidden');
+
+			const skipDate = new Date().toISOString().split('T')[0];
+			localStorage.setItem('language-suggestion-skipped-'+code, skipDate);
+			return false;
+		}
+		window.addEventListener('DOMContentLoaded', autoDetectLanguage); 	
+	</script>
+
 	`;
 }
