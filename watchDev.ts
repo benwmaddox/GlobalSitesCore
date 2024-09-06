@@ -14,7 +14,7 @@ const executeCommand = async (command: string): Promise<void> => {
     console.log(stdout);
     if (stderr) {
       console.error(stderr);
-      // run once more, just in case.
+      // run once more if errors, just in case.
       await execPromise(command);
       console.log(stdout);
       if (stderr) {
@@ -26,7 +26,6 @@ const executeCommand = async (command: string): Promise<void> => {
   }
 };
 
-// Function to handle changes
 const handleChange = async (): Promise<void> => {
   if (commandRunning) {
     changeDetected = true;
@@ -44,7 +43,6 @@ const handleChange = async (): Promise<void> => {
   }
 };
 
-// Initialize chokidar
 const watcher = chokidar.watch("src/**/*.*", {
   ignored: /node_modules/,
   persistent: true,
