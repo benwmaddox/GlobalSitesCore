@@ -27,8 +27,8 @@ const executeCommand = async (command: string): Promise<void> => {
 };
 
 const handleChange = async (): Promise<void> => {
+  changeDetected = true;
   if (commandRunning) {
-    changeDetected = true;
     return;
   }
 
