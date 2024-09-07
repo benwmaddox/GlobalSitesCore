@@ -66,7 +66,8 @@ export default i18next;
 export async function bulkTranslateOpenAI(
   lng: string,
   ns: string,
-  keys: string[]
+  keys: string[],
+  additionalSiteContext: string
 ): Promise<void> {
   const TranslationFormat = z.object({ t: z.string() });
   const filePath = path.resolve(`./src/locales/${lng}/${ns}.json`);
@@ -86,13 +87,14 @@ export async function bulkTranslateOpenAI(
           {
             role: "system",
             content:
-              `You are a helpful assistant designed to output JSON. The format should be { "t": "translation" }. Make sure to translate everything. Don't skip portions of the translation. ` +
+            `Please translate provided text from language code (en) to language code (${lng}).
+            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. The key is the original phrase. The value is the translation. Any translation key that has {{}} should not be translated but treated as a replacement placeholder. Keep the {{}} in the key and translation. `
+            + `This translation is used on a public website and should be clear. ` + additionalSiteContext + ' ' +
               (ns === "url"
                 ? ` This is meant to be used in a url and should not contain spaces or any characters not safe for URLs other than {{ and }} which are used as placeholders.  Use - as word separators. `
                 : "") +
               (ns === "blog" ? ` This is intended as a blog post. ` : "") +
-              `Please translate provided text from language code (en) to language code (${lng}).
-            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. The key is the original phrase. The value is the translation. Any translation key that has {{}} should not be translated but treated as a replacement placeholder. Keep the {{}} in the key and translation. `,
+             
           },
           {
             role: "user",
@@ -852,7 +854,7 @@ export async function BulkUpdateMissingKeysGoogleTranslate() {
   }
 }
 
-export async function BulkUpdateMissingKeysOpenAI() {
+export async function BulkUpdateMissingKeysOpenAI(additionalSiteContext : string) {
   var uniqueTuples = missingKeys.getUniqueTuples();
   if (uniqueTuples.length > 0) {
     console.log(
@@ -884,7 +886,7 @@ export async function BulkUpdateMissingKeysOpenAI() {
         console.log(
           `Translating ${keys.length} keys within namespace ${ns} to ${lang} language`
         );
-        translationPromises.push(bulkTranslateOpenAI(lang, ns, keys));
+        translationPromises.push(bulkTranslateOpenAI(lang, ns, keys, additionalSiteContext));
       }
     }
     await Promise.all(translationPromises);
