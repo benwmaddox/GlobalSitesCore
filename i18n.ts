@@ -87,14 +87,15 @@ export async function bulkTranslateOpenAI(
           {
             role: "system",
             content:
-            `Please translate provided text from language code (en) to language code (${lng}).
-            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. The key is the original phrase. The value is the translation. Any translation key that has {{}} should not be translated but treated as a replacement placeholder. Keep the {{}} in the key and translation. `
-            + `This translation is used on a public website and should be clear. ` + additionalSiteContext + ' ' +
+              `Please translate provided text from language code (en) to language code (${lng}).
+            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. The key is the original phrase. The value is the translation. Any translation key that has {{}} should not be translated but treated as a replacement placeholder. Keep the {{}} in the key and translation. ` +
+              `This translation is used on a public website and should be clear. ` +
+              additionalSiteContext +
+              " " +
               (ns === "url"
                 ? ` This is meant to be used in a url and should not contain spaces or any characters not safe for URLs other than {{ and }} which are used as placeholders.  Use - as word separators. `
                 : "") +
-              (ns === "blog" ? ` This is intended as a blog post. ` : "") +
-             
+              (ns === "blog" ? ` This is intended as a blog post. ` : ""),
           },
           {
             role: "user",
@@ -854,7 +855,9 @@ export async function BulkUpdateMissingKeysGoogleTranslate() {
   }
 }
 
-export async function BulkUpdateMissingKeysOpenAI(additionalSiteContext : string) {
+export async function BulkUpdateMissingKeysOpenAI(
+  additionalSiteContext: string
+) {
   var uniqueTuples = missingKeys.getUniqueTuples();
   if (uniqueTuples.length > 0) {
     console.log(
@@ -886,7 +889,9 @@ export async function BulkUpdateMissingKeysOpenAI(additionalSiteContext : string
         console.log(
           `Translating ${keys.length} keys within namespace ${ns} to ${lang} language`
         );
-        translationPromises.push(bulkTranslateOpenAI(lang, ns, keys, additionalSiteContext));
+        translationPromises.push(
+          bulkTranslateOpenAI(lang, ns, keys, additionalSiteContext)
+        );
       }
     }
     await Promise.all(translationPromises);
