@@ -64,7 +64,7 @@ export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang
 				{
 					lng: option.code
 				}
-			)}<br /></p><p><a class="button" href="${option.url}">${
+			)}</p><p><a class="button" href="${option.url}">${
 				i18next.t(`Yes`) +
 				' / ' +
 				i18next.t(`Yes`, {
