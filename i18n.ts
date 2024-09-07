@@ -87,7 +87,7 @@ export async function bulkTranslateOpenAI(
           {
             role: "system",
             content:
-              `Please translate provided text from language code (en) to language code (${lng}).
+              `Please translate provided text from language code (en) to language code (${lng}). It will be in JSON format.
             Note that ending in _one, _other, _few, _many should be treated as pluralization rules. The key is the original phrase. The value is the translation. Any translation key that has {{}} should not be translated but treated as a replacement placeholder. Keep the {{}} in the key and translation. ` +
               `This translation is used on a public website and should be clear. ` +
               additionalSiteContext +
