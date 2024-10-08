@@ -11,17 +11,27 @@ let commandRunning = false;
 const executeCommand = async (command: string): Promise<void> => {
 	const commandStartTime = new Date().getTime();
 	try {
-		const { stdout, stderr } = await execPromise(command);
-		console.log(stdout);
-		if (stderr) {
-			console.error(stderr);
-			// run once more if errors, just in case.
-			await execPromise(command);
-			console.log(stdout);
-			if (stderr) {
-				console.error(stderr);
-			}
-		}
+		const childProcess = exec(command);
+
+		// Stream stdout in real-time
+		childProcess.stdout?.on('data', (data) => {
+			process.stdout.write(data);
+		});
+
+		// Stream stderr in real-time
+		childProcess.stderr?.on('data', (data) => {
+			process.stderr.write(data);
+		});
+
+		await new Promise((resolve, reject) => {
+			childProcess.on('close', (code) => {
+				if (code === 0) {
+					resolve(null);
+				} else {
+					reject(new Error(`Command exited with code ${code}`));
+				}
+			});
+		});
 	} catch (error) {
 		console.error('Error executing command:', error);
 	}
