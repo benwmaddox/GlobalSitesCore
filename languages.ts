@@ -26,7 +26,13 @@ export const languageSettings = {
     "tr",
     "vi",
     "zh",
-    // Uncommon:
+  ],
+  defaultLanguage: "en",
+};
+
+export function addExtensiveLanguages() {
+  languageSettings.languages = [
+    ...languageSettings.languages,
     "sv",
     "no",
     "da",
@@ -38,9 +44,8 @@ export const languageSettings = {
     "bg",
     "ca",
     "he",
-  ],
-  defaultLanguage: "en",
-};
+  ];
+}
 
 export function setLanguages(languages: string[]) {
   languageSettings.languages = languages;
