@@ -3,8 +3,8 @@ export function titleCase(item: string) {
 	if (item === null || item === undefined || item === '') {
 		console.trace(`Title is empty.`);
 	}
-	let l = standardizeToSentenceCaseSingleLine(item);
-	var title = l
+	const l = standardizeToSentenceCaseSingleLine(item);
+	const title = l
 		.split(' ')
 		.map((w: string) => {
 			// If all are uppercase, keep uppercase
@@ -25,6 +25,8 @@ export function titleCase(item: string) {
 }
 
 function standardizeToSentenceCaseSingleLine(str: string): string {
+	// First split camelCase into separate words
+	str = str.replace(/([a-z])([A-Z])/g, '$1 $2');
 	// This regex pattern finds words in various scripts, including hyphenated words
 	const words = str.match(/[\p{L}\p{M}]+(?:[-'][\p{L}\p{M}]+)*|\d+|\S+/gu) || [];
 
