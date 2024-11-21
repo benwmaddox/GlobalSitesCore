@@ -79,18 +79,6 @@ export async function BundleJSFiles(
         for (const lang of languageSettings.languages) {
           await i18next.changeLanguage(lang);
 
-          // Apply inline translations
-          let processedCode = await inlineTranslationsCode(outputChunk.code);
-
-          // Apply terser if minification is requested
-          if (shouldMinify) {
-            const minified = await minify(processedCode, {
-              sourceMap: false,
-              // Add any other terser options here
-            });
-            processedCode = minified.code || processedCode;
-          }
-
           // Handle file naming for both main bundle and chunks
           let relativePath: string;
           if (outputChunk.type === "chunk") {
@@ -106,6 +94,23 @@ export async function BundleJSFiles(
             }
           } else {
             relativePath = "unknown.js"; // Add a default value
+          }
+
+          // Skip if this path is already in results
+          if (results.some((r) => r.relativePath === relativePath)) {
+            continue;
+          }
+
+          // Apply inline translations
+          let processedCode = await inlineTranslationsCode(outputChunk.code);
+
+          // Apply terser if minification is requested
+          if (shouldMinify) {
+            const minified = await minify(processedCode, {
+              sourceMap: false,
+              // Add any other terser options here
+            });
+            processedCode = minified.code || processedCode;
           }
 
           results.push({
