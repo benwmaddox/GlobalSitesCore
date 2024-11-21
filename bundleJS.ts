@@ -25,6 +25,7 @@ export async function BundleJSFiles(
       const bundle = await rollup({
         input: file,
         plugins: [
+          //dynamicImportVars(),
           json(),
           nodeResolve({
             mainFields: ["browser"],
@@ -33,6 +34,9 @@ export async function BundleJSFiles(
           commonjs(),
           nodePolyfills(),
         ],
+        output: {
+          inlineDynamicImports: false,
+        },
         onwarn: (warning, warn) => {
           if (warning.code === "THIS_IS_UNDEFINED") {
             return;
@@ -41,39 +45,76 @@ export async function BundleJSFiles(
         },
       });
 
+      var normalizedFilePath = file.replace(/\\/g, "/");
+      const fileDir = normalizedFilePath.substring(
+        0,
+        normalizedFilePath.lastIndexOf("/")
+      );
       const { output } = await bundle.generate({
-        format: "iife",
-        name: "page",
+        format: "es",
+        dir: fileDir,
+        manualChunks(id) {
+          id = id.replace(/\\/g, "/");
+          // Then handle node_modules as before
+          if (id.includes("node_modules")) {
+            const matches = id.match(/node_modules\/(@[^/]+\/[^/]+|[^/]+)/);
+            if (matches) {
+              const packageName = matches[1];
+              return `vendor-${packageName.replace("@", "").replace("/", "-")}`;
+            }
+            console.log({ id });
+            return "vendor";
+          }
+        },
       });
 
-      const bundledCode = output[0].code;
-
-      // Process for each language
-      for (const lang of languageSettings.languages) {
-        await i18next.changeLanguage(lang);
-
-        // Apply inline translations
-        let processedCode = await inlineTranslationsCode(bundledCode);
-
-        // Apply terser if minification is requested
-        if (shouldMinify) {
-          const minified = await minify(processedCode, {
-            sourceMap: false,
-            // Add any other terser options here
-          });
-          processedCode = minified.code || processedCode; // Fallback to original if minification fails
+      // Process all chunks from the output
+      for (const outputChunk of output) {
+        // Skip if not a chunk with code
+        if (outputChunk.type !== "chunk") {
+          continue;
         }
 
-        const relativePath = file
-          .replace("build/", "")
-          .replace("build\\", "")
-          .replace(".js", shouldMinify ? `.${lang}.min.js` : `.${lang}.js`);
+        // Process for each language
+        for (const lang of languageSettings.languages) {
+          await i18next.changeLanguage(lang);
 
-        results.push({
-          relativePath,
-          content: processedCode,
-          includeInSitemap: false,
-        });
+          // Apply inline translations
+          let processedCode = await inlineTranslationsCode(outputChunk.code);
+
+          // Apply terser if minification is requested
+          if (shouldMinify) {
+            const minified = await minify(processedCode, {
+              sourceMap: false,
+              // Add any other terser options here
+            });
+            processedCode = minified.code || processedCode;
+          }
+
+          // Handle file naming for both main bundle and chunks
+          let relativePath: string;
+          if (outputChunk.type === "chunk") {
+            const fileName = outputChunk.fileName || outputChunk.name;
+            relativePath = `${fileDir}/${fileName}`
+              .replace("build/", "")
+              .replace("build\\", "");
+            if (outputChunk.fileName.indexOf("vendor") == -1) {
+              relativePath = relativePath.replace(
+                ".js",
+                shouldMinify ? `.${lang}.min.js` : `.${lang}.js`
+              );
+            }
+          } else {
+            relativePath = "unknown.js"; // Add a default value
+          }
+
+          results.push({
+            relativePath,
+            content: processedCode,
+            includeInSitemap: false,
+          });
+          //console.log({ relativePath });
+        }
       }
 
       await bundle.close();
