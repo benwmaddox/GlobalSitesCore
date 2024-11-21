@@ -25,7 +25,6 @@ export async function BundleJSFiles(
       const bundle = await rollup({
         input: file,
         plugins: [
-          //dynamicImportVars(),
           json(),
           nodeResolve({
             mainFields: ["browser"],
