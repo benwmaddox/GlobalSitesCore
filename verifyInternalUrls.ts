@@ -115,6 +115,9 @@ export function verifyInternalUrls(
 		if (errors.length >= errorLimit) {
 			return;
 		}
+		if (definedUrl.indexOf('/vendor-') !== -1) {
+			return;
+		}
 		if (!definedUrlsReferenced.has(definedUrl) && !okUrls.has(definedUrl)) {
 			errors.push(`Defined url ${definedUrl} is not referenced.`);
 		}
