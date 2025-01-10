@@ -88,7 +88,7 @@ export async function bulkTranslateOpenAI(
             role: "system",
             content:
               `You are a helpful assistant designed to output JSON. The format should be { "t": "translation" }. Make sure to translate everything. Don't skip portions of the translation. Please translate provided text from language code (en) to language code (${lng}). It will be in JSON format.
-            Note that ending in _one, _other, _few, _many should be treated as pluralization rules. The key is the original phrase. The value is the translation. Any translation key that has {{}} should not be translated but treated as a replacement placeholder. Keep the {{}} in the key and translation. ` +
+              Note that ending in _one, _other, _few, _many should be treated as pluralization rules. The key is the original phrase. The value is the translation. Any translation key that has {{}} should not be translated but treated as a replacement placeholder. Keep the {{}} in the key and translation. ` +
               `This translation is used on a public website and should be clear. ` +
               additionalSiteContext +
               " " +
@@ -329,20 +329,20 @@ export async function bulkTranslateGoogleTranslate(
             return obj;
           }, {});
         /* 
-          
-    if (removePluralSuffix(batchKeys[i]) !== batchKeys[i] && ns !== "url") {
-      console.log(
-        `Google Translate does not support pluralization. Replacing value with __. "${
-          batchKeys[i]
-        }": "${removePluralSuffix(batchKeys[i])}" vs "${removePluralSuffix(
-          response.translations[i].translatedText
-        )}".`
-      );
+            
+      if (removePluralSuffix(batchKeys[i]) !== batchKeys[i] && ns !== "url") {
+        console.log(
+          `Google Translate does not support pluralization. Replacing value with __. "${
+            batchKeys[i]
+          }": "${removePluralSuffix(batchKeys[i])}" vs "${removePluralSuffix(
+            response.translations[i].translatedText
+          )}".`
+        );
 
-      existingTranslations[batchKeys[i]] = "____";
-      continue;
-    }
-          */
+        existingTranslations[batchKeys[i]] = "____";
+        continue;
+      }
+            */
 
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
         // Save the updated translations back to the file
