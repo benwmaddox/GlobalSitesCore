@@ -26,6 +26,7 @@ let lastApiCallTime = 0;
 export let missingKeys = new TupleSet();
 
 const i18nOptions: InitOptions = {
+  nsSeparator: false,
   lng: languageSettings.defaultLanguage,
   fallbackLng: false,
   backend: {
