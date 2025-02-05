@@ -1,6 +1,8 @@
 import i18next from "i18next";
 import { LanguageOption } from "./LanguageOption";
 import { FileResult } from "./FileResult";
+import { replaceOnce } from "./replaceOnce";
+replaceOnce; // to make sure module gets imported as it is used in many pages
 
 export const languageSettings = {
   languages: [

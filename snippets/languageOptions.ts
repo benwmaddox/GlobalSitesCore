@@ -1,33 +1,36 @@
-import i18next from 'i18next';
-import { LanguageOption } from '../LanguageOption';
-import { languageSettings } from '../languages';
+import i18next from "i18next";
+import { LanguageOption } from "../LanguageOption";
+import { languageSettings } from "../languages";
 
 export function languageOptionLinks(
-	languageOptions: { name: string; url: string }[],
-	joinString = ' | '
+  languageOptions: { name: string; url: string; code: string }[],
+  joinString = " | "
 ): string {
-	return [...languageOptions]
-		.map((option) => {
-			return `<a href="${option.url}" >${option.name}</a>`;
-		})
-		.join(joinString);
+  return [...languageOptions]
+    .map((option) => {
+      return `<a href="${option.url}" hreflang="${option.code}" >${option.name}</a>`;
+    })
+    .join(joinString);
 }
 
 export function languageOptionAlternateUrls(
-	languageOptions: LanguageOption[],
-	baseUrl: string
+  languageOptions: LanguageOption[],
+  baseUrl: string
 ): string {
-	return [...languageOptions]
-		.map((option) => {
-			return option.code == languageSettings.defaultLanguage
-				? `<link rel="alternate" href="${baseUrl}${option.url}" hreflang="${option.code}"/>\n<link rel="alternate" href="${baseUrl}${option.url}" hreflang="x-default"/>`
-				: `<link rel="alternate" href="${baseUrl}${option.url}" hreflang="${option.code}"/>`;
-		})
-		.join('\n');
+  return [...languageOptions]
+    .map((option) => {
+      return option.code == languageSettings.defaultLanguage
+        ? `<link rel="alternate" href="${baseUrl}${option.url}" hreflang="${option.code}"/>\n<link rel="alternate" href="${baseUrl}${option.url}" hreflang="x-default"/>`
+        : `<link rel="alternate" href="${baseUrl}${option.url}" hreflang="${option.code}"/>`;
+    })
+    .join("\n");
 }
 
-export function languageOptionDropDown(languageOptions: LanguageOption[], lang: string): string {
-	return /*HTML*/ `
+export function languageOptionDropDown(
+  languageOptions: LanguageOption[],
+  lang: string
+): string {
+  return /*HTML*/ `
   <script>
     function switchLanguage() {
       var selectedLanguageUrl = document.getElementById("language-select").value;
@@ -37,48 +40,53 @@ export function languageOptionDropDown(languageOptions: LanguageOption[], lang: 
   <div class="language-switcher">
     <select id="language-select" onchange="switchLanguage()">
       ${[...languageOptions]
-			.sort((a, b) => (a.code == lang ? 1 : a.code.localeCompare(b.code)))
-			.map((option) => {
-				return `<option value="${option.url}" ${option.code === lang ? 'selected' : ''}>${
-					option.name
-				}</option>`;
-			})
-			.join('\n')}
+        .sort((a, b) => (a.code == lang ? 1 : a.code.localeCompare(b.code)))
+        .map((option) => {
+          return `<option value="${option.url}" ${
+            option.code === lang ? "selected" : ""
+          }>${option.name}</option>`;
+        })
+        .join("\n")}
     </select>
   </div>`;
 }
 
-export function autoDetectLanguageNotice(languageOptions: LanguageOption[], lang: string): string {
-	return /*HTML*/ `
+export function autoDetectLanguageNotice(
+  languageOptions: LanguageOption[],
+  lang: string
+): string {
+  return /*HTML*/ `
 	
 	${[...languageOptions]
-		.sort((a, b) => (a.code == lang ? 1 : a.code.localeCompare(b.code)))
-		.filter((option) => option.code !== lang)
-		.map((option) => {
-			return /*html*/ `<div class="language-suggestion warning hidden" id="language-suggestion-${
-				option.code
-			}" ><p>${i18next.t(
-				`We have another page in ${option.name}. Would you like to change languages?`
-			)}</p><p>${i18next.t(
-				`We have another page in ${option.name}. Would you like to change languages?`,
-				{
-					lng: option.code
-				}
-			)}</p><p><a class="button" href="${option.url}">${
-				i18next.t(`Yes`) +
-				' / ' +
-				i18next.t(`Yes`, {
-					lng: option.code
-				})
-			}</a> <a class="button" href="#" onclick="hideLanguageSuggestion('${option.code}');">${
-				i18next.t(`No`) +
-				' / ' +
-				i18next.t(`No`, {
-					lng: option.code
-				})
-			}</a></p></div>`;
-		})
-		.join('\n')}
+    .sort((a, b) => (a.code == lang ? 1 : a.code.localeCompare(b.code)))
+    .filter((option) => option.code !== lang)
+    .map((option) => {
+      return /*html*/ `<div class="language-suggestion warning hidden" id="language-suggestion-${
+        option.code
+      }" ><p>${i18next.t(
+        `We have another page in ${option.name}. Would you like to change languages?`
+      )}</p><p>${i18next.t(
+        `We have another page in ${option.name}. Would you like to change languages?`,
+        {
+          lng: option.code,
+        }
+      )}</p><p><a class="button" href="${option.url}">${
+        i18next.t(`Yes`) +
+        " / " +
+        i18next.t(`Yes`, {
+          lng: option.code,
+        })
+      }</a> <a class="button" href="#" onclick="hideLanguageSuggestion('${
+        option.code
+      }');">${
+        i18next.t(`No`) +
+        " / " +
+        i18next.t(`No`, {
+          lng: option.code,
+        })
+      }</a></p></div>`;
+    })
+    .join("\n")}
 		
 	<script>		
 		function autoDetectLanguage() {
